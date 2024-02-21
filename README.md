@@ -54,6 +54,7 @@ A test script is provided for a CRUD ODRL engine: `yarn script:ucp-enforcement`.
 In the [script](./scripts/test-ucp-enforcement.ts) a read Usage Control Rule (in ODRL) is present together with N3 interpretation rules. 
 Then a read request is performed using the engine, which results in a list of grants. This list is then printed to the console.
 
+In the [subrepo directory](./packages/ucp/), [documentation](./packages/ucp/docs/getting-started.md) can be found on how to set up such a usage control decision engine.
 
 ## Next steps
 

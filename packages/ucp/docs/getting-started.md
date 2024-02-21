@@ -115,9 +115,9 @@ In the engine, this grant is calculated within the N3 interpretation rules, more
 
 The full code sample for this example can be found in [appendix I](#appendix-I-Full-code-snippet)
 
-### <!--Temporal Policy engine-->
+### Temporal Policy engine
 
-<!--TODO:-->
+TODO:
 
 ### Engine with explanation
 
@@ -146,7 +146,7 @@ To have a **usage control decision** engine that can give **Explanations**, it n
 
 https://github.com/SolidLabResearch/user-managed-access/blob/1c0410b6f1c3f133843430f60d4f8c690273dff0/packages/ucp/docs/log-engine.ts#L1-L18
 
-Not that compared to the previous engines, a different **plugin** and a different **N3 interpretation rules** are used.
+Note that compared to the previous engines, a different **plugin** and a different **N3 interpretation rules** are used.
 These allow for retrieving a proper explanation during the calculation of the requests.
 
 Another difference is the fact that know the method `calculateAndExplainAccessModes` has to be used. 

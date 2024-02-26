@@ -61,7 +61,8 @@
     "script:registration": "yarn exec ts-node ./scripts/test-registration.ts",
     "script:ucp-enforcement": "yarn exec ts-node ./scripts/test-ucp-enforcement.ts",
     "script:uma-ucp": "yarn exec ts-node ./scripts/test-uma-ucp.ts",
-    "script:flow": "yarn run script:public && yarn run script:private && yarn run script:uma-ucp && yarn run script:registration && yarn run script:ucp-enforcement"
+    "script:flow": "yarn run script:public && yarn run script:private && yarn run script:uma-ucp && yarn run script:registration && yarn run script:ucp-enforcement",
+    "script:packaging": "yarn exec ts-node ./scripts/test-packaging.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.1.0",
@@ -82,7 +83,8 @@
     "typescript": "^5.2.2"
   },
   "resolutions": {
-    "@types/node": "^18.18.11"
+    "@types/node": "^18.18.11",
+    "@zazuko/rdf-vocabularies": "2023.1.19"
   },
   "workspaces": [
     "packages/*"

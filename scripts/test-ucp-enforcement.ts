@@ -68,7 +68,7 @@ const crud = `
 `
 
 import { EyeJsReasoner } from "koreografeye";
-import { PolicyExecutor, SimplePolicy, UconRequest, UcpPatternEnforcement, UcpPlugin, turtleStringToStore, MemoryUCRulesStorage } from "@solidlab/ucp";
+import { PolicyExecutor, UconRequest, UcpPatternEnforcement, UcpPlugin, turtleStringToStore, MemoryUCRulesStorage } from "@solidlab/ucp";
 
 
 
@@ -100,7 +100,7 @@ export interface Constraint {
  * @param baseIri 
  * @returns 
  */
-export async function basicPolicy(type: UCPPolicy, baseIri?: string): Promise<SimplePolicy> {
+export async function basicPolicy(type: UCPPolicy, baseIri?: string): Promise<any> {
     baseIri = baseIri ?? `http://example.org/${new Date().valueOf()}#` // better would be uuid
     const agreement = baseIri + "usagePolicy";
     const rule = baseIri + "permission";

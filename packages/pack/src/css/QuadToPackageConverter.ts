@@ -68,15 +68,10 @@ export class QuadToPackageConverter extends BaseTypedRepresentationConverter {
     const contentString = await n3pack.serializePackage(contentPackage)
 
     console.log(`packaged: \n`, contentString, 'end')
-
-    const data = new Readable()
-    data.push(contentString.trim())
-    data.push(null)
     
-
     switch (contentType) {
       case "text/n3-package":
-        return new BasicRepresentation(data, quads.metadata, "text/n3-package")   
+        return new BasicRepresentation(contentString, quads.metadata, "text/n3-package")   
            
       default:
         throw new Error('Incorrect content type')

@@ -63,7 +63,7 @@
     "start": "yarn run community-solid-server -m . -c ./config/default.json ../pack/config/default.json --seedConfig ./config/seed.json"
   },
   "dependencies": {
-    "@solid/community-server": "^7.0.2",
+    "@solid/community-server": "^7.0.3",
     "@solidlab/uma": "workspace:^",
     "componentsjs": "^5.4.2",
     "cross-fetch": "^4.0.0",

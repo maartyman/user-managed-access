@@ -4612,7 +4612,7 @@ __metadata:
     koreografeye: "npm:^0.4.8"
     logform: "npm:^2.6.0"
     n3: "npm:^1.17.2"
-    odrl-evaluator: "npm:^0.1.0"
+    odrl-evaluator: "npm:^0.1.1"
     uuid: "npm:^9.0.1"
     winston: "npm:^3.11.0"
   languageName: unknown
@@ -9642,9 +9642,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"odrl-evaluator@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "odrl-evaluator@npm:0.1.0"
+"odrl-evaluator@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "odrl-evaluator@npm:0.1.1"
   dependencies:
     "@rdfjs/types": "npm:^1.1.0"
     "@types/n3": "npm:^1.16.3"
@@ -9656,7 +9656,7 @@ __metadata:
     streamify-string: "npm:^1.0.1"
     tmp: "npm:^0.2.3"
     uuidv4: "npm:^6.2.13"
-  checksum: 37b427c35f6c5abce56b7233dbf22480500d1b036dcd3079e685cda7c26957a5b41ccf479058a66f6f06787f45b355c728076caf62816a7d3824ef68c5dfda94
+  checksum: 5091b4402b2def1fb6bf8e7749d7f2b89a1817da59abfa6ae9f1a0db2fd3ae50222eebc578fba21f9d0f455cb5b515a067ac13584c43e3ba98f50454ccf30e16
   languageName: node
   linkType: hard
 

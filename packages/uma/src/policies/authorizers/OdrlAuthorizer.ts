@@ -3,9 +3,6 @@ import {ODRL, UconRequest, UCRulesStorage} from "@solidlab/ucp";
 import {WEBID} from "../../credentials/Claims";
 import {ODRLEvaluator, ODRLEngineMultipleSteps, EyeReasoner} from 'odrl-evaluator'
 import {DataFactory, Literal, NamedNode, Quad_Subject, Store, Term, Writer} from "n3";
-import quad = DataFactory.quad;
-import namedNode = DataFactory.namedNode;
-import literal = DataFactory.literal;
 import {generate_uuid} from "koreografeye";
 import {createVocabulary, DC, RDF} from "@solid/community-server";
 import { Logger } from "../../util/logging/Logger";
@@ -14,6 +11,7 @@ import {ClaimSet} from "../../credentials/ClaimSet";
 import {Permission} from "../../views/Permission";
 import {Requirements} from "../../credentials/Requirements";
 
+const {quad, namedNode, literal} = DataFactory
 export class OdrlAuthorizer implements Authorizer {
     protected readonly logger: Logger = getLoggerFor(this);
     private readonly odrlEvaluator: ODRLEvaluator;
@@ -95,6 +93,7 @@ export class OdrlAuthorizer implements Authorizer {
                         // console.log(new Writer().quadsToString([...policyStore]))
                         // console.log(new Writer().quadsToString([...sotw]))
                         // console.log(new Writer().quadsToString(reports))
+                        // console.log(policyReport)
                         if (policyReport.ruleReport.activationState === ActivationState.Active &&
                             policyReport.ruleReport.type === RuleReportType.PermissionReport) {
                             scopes_permitted.push(action)
@@ -171,9 +170,9 @@ type PremiseReport = {
 // is it possible to just use CR.namespace + "term"?
 // https://github.com/microsoft/TypeScript/issues/40793
 enum RuleReportType {
-    PermissionReport= 'http://example.com/report/temp/Permission',
-    ProhibitionReport= 'http://example.com/report/temp/Prohibition',
-    ObligationReport= 'http://example.com/report/temp/Obligation',
+    PermissionReport= 'http://example.com/report/temp/PermissionReport',
+    ProhibitionReport= 'http://example.com/report/temp/ProhibitionReport',
+    ObligationReport= 'http://example.com/report/temp/ObligationReport',
 }
 enum SatisfactionState {
     Satisfied= 'http://example.com/report/temp/Satisfied',

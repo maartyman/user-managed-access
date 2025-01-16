@@ -57,6 +57,7 @@
     "build:demo": "cd demo && yarn build:demo",
     "test:all": "yarn workspaces foreach --include 'packages/*' -A -pi run test",
     "start:all": "yarn workspaces foreach --include 'packages/*' -A -pi run start",
+    "start:odrl": "yarn workspace @solidlab/uma run start:odrl & yarn workspace @solidlab/uma-css run start",
     "start:demo": "concurrently 'yarn start:demo:sites' 'yarn start:demo:servers'",
     "start:demo:servers": "yarn workspaces foreach --include 'packages/*' -A -pi run demo",
     "start:demo:sites": "cd demo && yarn start:demo",
@@ -66,6 +67,7 @@
     "script:registration": "yarn exec ts-node ./scripts/test-registration.ts",
     "script:ucp-enforcement": "yarn exec ts-node ./scripts/test-ucp-enforcement.ts",
     "script:uma-ucp": "yarn exec ts-node ./scripts/test-uma-ucp.ts",
+    "script:uma-odrl": "yarn exec ts-node ./scripts/test-uma-ODRL.ts",
     "script:flow": "yarn run script:public && yarn run script:private && yarn run script:uma-ucp && yarn run script:registration && yarn run script:ucp-enforcement"
   },
   "devDependencies": {

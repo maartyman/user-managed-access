@@ -1,7 +1,7 @@
 import {Authorizer} from "./Authorizer";
 import {basicPolicy, ODRL, UCPPolicy, UCRulesStorage} from "@solidlab/ucp";
 import {WEBID} from "../../credentials/Claims";
-import {ODRLEvaluator, ODRLEngineMultipleSteps } from 'odrl-evaluator'
+import {ODRLEvaluator, ODRLEngineMultipleSteps, EyeReasoner } from 'odrl-evaluator'
 import {DataFactory, Literal, NamedNode, Quad_Subject, Store } from "n3";
 import {createVocabulary, DC, RDF} from "@solid/community-server";
 import { Logger } from "../../util/logging/Logger";
@@ -40,8 +40,8 @@ export class OdrlAuthorizer implements Authorizer {
     constructor(
         private readonly policies: UCRulesStorage,
     ) {
-        // const engine = new ODRLEngineMultipleSteps(new EyeReasoner('/usr/local/bin/eye', ["--quiet", "--nope", "--pass-only-new"]));
-        const engine = new ODRLEngineMultipleSteps();
+        const engine = new ODRLEngineMultipleSteps(new EyeReasoner('/usr/local/bin/eye', ["--quiet", "--nope", "--pass-only-new"]));
+        // const engine = new ODRLEngineMultipleSteps();
         this.odrlEvaluator = new ODRLEvaluator(engine);
     }
 

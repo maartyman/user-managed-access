@@ -5,7 +5,7 @@ import { ClaimSet } from '../ClaimSet';
 import { Credential } from "../Credential";
 import { JWT } from '../Formats';
 import { decodeJwt, decodeProtectedHeader, jwtVerify } from 'jose';
-import buildGetJwks from 'get-jwks';
+import buildGetJwks, {GetJwks} from 'get-jwks';
 
 /**
  * An UNSECURE Verifier that parses Tokens of the format `encode_uri(webId)[:encode_uri(clientId)]`,
@@ -13,7 +13,7 @@ import buildGetJwks from 'get-jwks';
  */
 export class JwtVerifier implements Verifier {
   protected readonly logger: Logger = getLoggerFor(this);
-  protected jwks = buildGetJwks();
+  protected jwks:GetJwks = buildGetJwks();
 
   constructor(
     private readonly allowedClaims: string[],
@@ -28,12 +28,12 @@ export class JwtVerifier implements Verifier {
     }
 
     const claims = decodeJwt(credential.token);
-    
+
     if (this.verifyJwt) {
       if (!claims.iss) {
         throw new Error(`JWT should contain 'iss' claim.`);
       }
-      
+
       const params = decodeProtectedHeader(credential.token);
 
       if (!params.alg) {
@@ -57,7 +57,7 @@ export class JwtVerifier implements Verifier {
       if (this.errorOnExtraClaims) throw new Error(`Claim '${claim}' not allowed.`);
 
       delete claims[claim];
-    }    
+    }
 
     this.logger.warn(`Returning new claims: ${JSON.stringify(claims)}`)
     return claims;

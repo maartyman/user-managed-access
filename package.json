@@ -51,7 +51,7 @@
   "exports": {},
   "files": [],
   "scripts": {
-    "postinstall": "yarn build:all",
+    "postinstall": "yarn run sync:list && yarn build:all",
     "clean": "shx rm -rf ./**/node_modules",
     "build:all": "yarn workspaces foreach --include 'packages/*' -A -pi -t run build",
     "build:demo": "cd demo && yarn build:demo",
@@ -66,14 +66,16 @@
     "script:registration": "yarn exec ts-node ./scripts/test-registration.ts",
     "script:ucp-enforcement": "yarn exec ts-node ./scripts/test-ucp-enforcement.ts",
     "script:uma-ucp": "yarn exec ts-node ./scripts/test-uma-ucp.ts",
-    "script:flow": "yarn run script:public && yarn run script:private && yarn run script:uma-ucp && yarn run script:registration && yarn run script:ucp-enforcement"
+    "script:flow": "yarn run script:public && yarn run script:private && yarn run script:uma-ucp && yarn run script:registration && yarn run script:ucp-enforcement",
+    "sync:list": "syncpack list-mismatches",
+    "sync:fix": "syncpack fix-mismatches"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.1.0",
     "@commitlint/config-conventional": "^16.0.0",
     "@solidlab/ucp": "workspace:^",
-    "@types/jest": "^29.5.6",
-    "@types/node": "^20.9.4",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.25",
     "@typescript-eslint/eslint-plugin": "^5.12.1",
     "@typescript-eslint/parser": "^5.12.1",
     "componentsjs-generator": "^3.1.2",
@@ -83,12 +85,13 @@
     "jest": "^29.7.0",
     "koreografeye": "^0.4.8",
     "shx": "^0.3.4",
-    "ts-jest": "^29.1.1",
+    "syncpack": "^13.0.2",
+    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.3"
   },
   "resolutions": {
-    "@types/node": "^18.18.11"
+    "@types/node": "^20.11.25"
   },
   "workspaces": [
     "packages/*"

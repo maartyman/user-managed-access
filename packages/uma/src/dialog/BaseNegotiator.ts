@@ -1,4 +1,3 @@
-import { BadRequestHttpError } from '../util/http/errors/BadRequestHttpError';
 import { Ticket } from '../ticketing/Ticket';
 import { Verifier } from '../credentials/verify/Verifier';
 import { TokenFactory } from '../tokens/TokenFactory';
@@ -10,7 +9,7 @@ import { reType } from '../util/ReType';
 import { KeyValueStore } from '../util/storage/models/KeyValueStore';
 import { TicketingStrategy } from '../ticketing/strategy/TicketingStrategy';
 import { v4 } from 'uuid';
-import { ForbiddenHttpError, getLoggerFor } from '@solid/community-server';
+import { BadRequestHttpError, ForbiddenHttpError, getLoggerFor } from '@solid/community-server';
 
 /**
  * A concrete Negotiator that verifies incoming Claims and processes Tickets

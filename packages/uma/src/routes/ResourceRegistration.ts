@@ -1,13 +1,15 @@
-import { createErrorMessage, getLoggerFor } from '@solid/community-server';
-import {BadRequestHttpError} from '../util/http/errors/BadRequestHttpError';
+import {
+  BadRequestHttpError,
+  createErrorMessage,
+  getLoggerFor,
+  MethodNotAllowedHttpError,
+  UnauthorizedHttpError, UnsupportedMediaTypeHttpError
+} from '@solid/community-server';
 import {HttpHandler} from '../util/http/models/HttpHandler';
 import {HttpHandlerContext} from '../util/http/models/HttpHandlerContext';
 import {HttpHandlerResponse} from '../util/http/models/HttpHandlerResponse';
-import {UnauthorizedHttpError} from '../util/http/errors/UnauthorizedHttpError';
-import {UnsupportedMediaTypeHttpError} from '../util/http/errors/UnsupportedMediaTypeHttpError';
 import {KeyValueStore} from '../util/storage/models/KeyValueStore';
 import {v4} from 'uuid';
-import { MethodNotAllowedHttpError } from '../util/http/errors/MethodNotAllowedHttpError';
 import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
 import { ResourceDescription } from '../views/ResourceDescription';
 import { reType } from '../util/ReType';

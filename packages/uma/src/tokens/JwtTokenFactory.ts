@@ -1,7 +1,6 @@
-import { BadRequestHttpError } from '../util/http/errors/BadRequestHttpError';
 import { importJWK, jwtVerify, SignJWT } from 'jose';
 import { v4 } from 'uuid';
-import { getLoggerFor, JwkGenerator } from '@solid/community-server';
+import { BadRequestHttpError, getLoggerFor, JwkGenerator } from '@solid/community-server';
 import { isString } from '../util/StringGuard';
 import { SerializedToken , TokenFactory} from './TokenFactory';
 import { AccessToken } from './AccessToken';

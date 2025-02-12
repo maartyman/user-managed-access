@@ -21,7 +21,7 @@ export class IntrospectionHandler implements HttpHandler {
 
   /**
    * Creates an introspection handler for tokens in the given token store.
-   * 
+   *
    * @param tokenStore - The store containing the tokens.
    * @param jwtTokenFactory - The factory with which to produce JWT representations of the tokens.
    */
@@ -54,9 +54,9 @@ export class IntrospectionHandler implements HttpHandler {
     }
 
     try {
-      const opaqueToken = new URLSearchParams(request.body).get('token');
+      const opaqueToken = new URLSearchParams(request.body as Record<string, string>).get('token');
       if (!opaqueToken) throw new Error ();
-      
+
       const jwt = this.opaqueToJwt(opaqueToken);
       return {
         headers: {'content-type': 'application/json'},

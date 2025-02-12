@@ -6,10 +6,9 @@ import { NeedInfoError } from '../errors/NeedInfoError';
 import { DialogInput } from './Input';
 import { DialogOutput } from './Output';
 import { reType } from '../util/ReType';
-import { KeyValueStore } from '../util/storage/models/KeyValueStore';
 import { TicketingStrategy } from '../ticketing/strategy/TicketingStrategy';
 import { v4 } from 'uuid';
-import { BadRequestHttpError, ForbiddenHttpError, getLoggerFor } from '@solid/community-server';
+import { BadRequestHttpError, ForbiddenHttpError, getLoggerFor, KeyValueStorage } from '@solid/community-server';
 
 /**
  * A concrete Negotiator that verifies incoming Claims and processes Tickets
@@ -21,13 +20,13 @@ export class BaseNegotiator implements Negotiator {
   /**
    * Construct a new Negotiator
    * @param verifier - The Verifier used to verify Claims of incoming Credentials.
-   * @param ticketStore - A KeyValueStore to track Tickets.
+   * @param ticketStore - A KeyValueStorage to track Tickets.
    * @param ticketManager - The strategy describing the life cycle of a Ticket.
    * @param tokenFactory - A factory for minting Access Tokens.
    */
   public constructor(
     protected verifier: Verifier,
-    protected ticketStore: KeyValueStore<string, Ticket>,
+    protected ticketStore: KeyValueStorage<string, Ticket>,
     protected ticketingStrategy: TicketingStrategy,
     protected tokenFactory: TokenFactory,
   ) {}

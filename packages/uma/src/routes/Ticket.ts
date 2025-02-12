@@ -1,7 +1,7 @@
 import {
   BadRequestHttpError,
   createErrorMessage,
-  getLoggerFor, UnauthorizedHttpError,
+  getLoggerFor, KeyValueStorage, UnauthorizedHttpError,
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
 import { HttpHandler } from '../util/http/models/HttpHandler';
@@ -10,7 +10,6 @@ import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { array, reType } from '../util/ReType';
 import { Permission } from '../views/Permission';
 import { Ticket } from '../ticketing/Ticket';
-import { KeyValueStore } from '../util/storage/models/KeyValueStore';
 import { TicketingStrategy } from '../ticketing/strategy/TicketingStrategy';
 import { v4 } from 'uuid';
 import { verifyRequest } from '../util/HttpMessageSignatures';
@@ -33,7 +32,7 @@ export class TicketRequestHandler implements HttpHandler {
    */
   constructor(
     private readonly ticketingStrategy: TicketingStrategy,
-    private readonly ticketStore: KeyValueStore<string, Ticket>,
+    private readonly ticketStore: KeyValueStorage<string, Ticket>,
   ) {}
 
   /**

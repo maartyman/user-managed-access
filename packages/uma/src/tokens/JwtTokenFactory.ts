@@ -1,9 +1,7 @@
 import { BadRequestHttpError } from '../util/http/errors/BadRequestHttpError';
-import { Logger } from '../util/logging/Logger';
-import { getLoggerFor } from '../util/logging/LoggerUtils';
 import { importJWK, jwtVerify, SignJWT } from 'jose';
 import { v4 } from 'uuid';
-import { JwkGenerator } from '@solid/community-server';
+import { getLoggerFor, JwkGenerator } from '@solid/community-server';
 import { isString } from '../util/StringGuard';
 import { SerializedToken , TokenFactory} from './TokenFactory';
 import { AccessToken } from './AccessToken';
@@ -23,14 +21,14 @@ export interface JwtTokenParams {
  * A TokenFactory yielding its tokens as signed JWTs.
  */
 export class JwtTokenFactory extends TokenFactory {
-  protected readonly logger: Logger = getLoggerFor(this);
+  protected readonly logger = getLoggerFor(this);
 
   /**
      * Construct a new ticket factory
      * @param {JwkGenerator} keyGen - key generator to be used in issuance
      */
   constructor(
-    private readonly keyGen: JwkGenerator, 
+    private readonly keyGen: JwkGenerator,
     private readonly issuer: string,
     private readonly params: JwtTokenParams = {expirationTime: '30m', aud: 'solid'}
   ) {
@@ -54,7 +52,7 @@ export class JwtTokenFactory extends TokenFactory {
       .setJti(v4())
       .sign(jwk);
 
-    this.logger.debug('Issued new JWT Token', token);
+    this.logger.debug(`Issued new JWT Token ${JSON.stringify(token)}`);
     return {token: jwt, tokenType: 'Bearer'};
   }
 

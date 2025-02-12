@@ -52,11 +52,6 @@ export * from './views/ScopeDescription';
 
 /* Replace the following with CSS types */
 
-// Logging
-export * from './util/logging/Logger';
-export * from './util/logging/LoggerUtils';
-export * from './util/logging/WinstonLogger';
-
 // Storage
 export * from './util/storage/JsonFileStore';
 export * from './util/storage/MemoryStore';

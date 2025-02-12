@@ -1,5 +1,4 @@
-import { Logger } from '../../util/logging/Logger';
-import { getLoggerFor } from '../../util/logging/LoggerUtils';
+import { getLoggerFor } from '@solid/community-server';
 import { Verifier } from './Verifier';
 import { ClaimSet } from '../ClaimSet';
 import { Credential } from "../Credential";
@@ -12,7 +11,7 @@ import buildGetJwks from 'get-jwks';
  * without performing any further verification.
  */
 export class JwtVerifier implements Verifier {
-  protected readonly logger: Logger = getLoggerFor(this);
+  protected readonly logger = getLoggerFor(this);
   protected jwks = buildGetJwks();
 
   constructor(
@@ -28,12 +27,12 @@ export class JwtVerifier implements Verifier {
     }
 
     const claims = decodeJwt(credential.token);
-    
+
     if (this.verifyJwt) {
       if (!claims.iss) {
         throw new Error(`JWT should contain 'iss' claim.`);
       }
-      
+
       const params = decodeProtectedHeader(credential.token);
 
       if (!params.alg) {
@@ -57,7 +56,7 @@ export class JwtVerifier implements Verifier {
       if (this.errorOnExtraClaims) throw new Error(`Claim '${claim}' not allowed.`);
 
       delete claims[claim];
-    }    
+    }
 
     this.logger.warn(`Returning new claims: ${JSON.stringify(claims)}`)
     return claims;

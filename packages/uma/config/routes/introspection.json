@@ -1,27 +1,26 @@
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/@solidlab/uma/^0.0.0/components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solidlab/uma/^0.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^7.0.0/components/context.jsonld"
   ],
   "@graph": [
     {
-      "@id": "urn:uma:default:IntrospectionRoute",
-      "@type": "HttpHandlerRoute",
-      "operations": [
-        {
-          "@type": "HttpHandlerOperation",
-          "method": "POST",
-          "publish": true
-        }
-      ],
+      "@id": "urn:uma:default:IntrospectionRouteHandler",
+      "@type": "InteractionRouterHandler",
+      "allowedMethods": [ "POST" ],
+      "allowedRoutes": [{
+        "@id": "urn:uma:default:IntrospectionRoute",
+        "@type": "RelativePathInteractionRoute",
+        "base": { "@type": "MatchAllRoute" },
+        "relativePath": "/uma/introspect",
+        "ensureSlash": false
+      }],
       "handler": {
-        "@type": "JsonHttpErrorHandler",
-        "nestedHandler": {
-          "@type": "IntrospectionHandler",
-          "tokenStore": { "@id": "urn:uma:default:TokenStore" },
-          "jwtTokenFactory": { "@id": "urn:uma:default:TokenFactory" }
-        }
-      },
-      "path": "/uma/introspect"
+        "@id": "urn:uma:default:IntrospectionHandler",
+        "@type": "IntrospectionHandler",
+        "tokenStore": { "@id": "urn:uma:default:TokenStore" },
+        "jwtTokenFactory": { "@id": "urn:uma:default:TokenFactory" }
+      }
     }
   ]
 }

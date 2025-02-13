@@ -1,6 +1,7 @@
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/@solidlab/uma/^0.0.0/components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solidlab/uma/^0.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^7.0.0/components/context.jsonld"
   ],
   "@graph": [
     {
@@ -9,30 +10,34 @@
       "resourceStore": { "@id": "urn:uma:default:ResourceRegistrationStore" }
     },
     {
-      "@id": "urn:uma:default:ResourceRegistrationRoute",
-      "@type": "HttpHandlerRoute",
-      "operations": [
-        {
-          "@type": "HttpHandlerOperation",
-          "method": "POST",
-          "publish": true
-        }
-      ],
-      "handler": { "@id": "urn:uma:default:ResourceRegistrationHandler" },
-      "path": "/uma/resources"
+      "@id": "urn:uma:default:ResourceRegistrationRouteHandler",
+      "@type": "InteractionRouterHandler",
+      "allowedMethods": [ "POST" ],
+      "allowedRoutes": [{
+        "@id": "urn:uma:default:ResourceRegistrationRoute",
+        "@type": "RelativePathInteractionRoute",
+        "base": { "@type": "MatchAllRoute" },
+        "relativePath": "/uma/resources",
+        "ensureSlash": false
+      }],
+      "handler": { "@id": "urn:uma:default:ResourceRegistrationHandler" }
     },
     {
-      "@id": "urn:uma:default:ResourceRegistrationOpsRoute",
-      "@type": "HttpHandlerRoute",
-      "operations": [
-        {
-          "@type": "HttpHandlerOperation",
-          "method": "DELETE",
-          "publish": true
-        }
-      ],
-      "handler": { "@id": "urn:uma:default:ResourceRegistrationHandler" },
-      "path": "/uma/resources/:id"
+      "@id": "urn:uma:default:ResourceRegistrationOpsRouteHandler",
+      "@type": "InteractionRouterHandler",
+      "allowedMethods": [ "DELETE" ],
+      "allowedRoutes": [{
+        "@id": "urn:uma:default:ResourceRegistrationOpsRoute",
+        "@type": "IdInteractionRoute",
+        "base": {
+          "@type": "RelativePathInteractionRoute",
+          "base": { "@type": "MatchAllRoute" },
+          "relativePath": "/uma/resources/",
+          "ensureSlash": false
+        },
+        "idName": "id"
+      }],
+      "handler": { "@id": "urn:uma:default:ResourceRegistrationHandler" }
     }
   ]
 }

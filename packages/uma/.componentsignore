@@ -13,5 +13,6 @@
   "ReType",
   "ScopeDescription",
   "Ticket",
-  "URL"
+  "URL",
+  "WeakMap"
 ]

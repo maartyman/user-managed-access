@@ -1,7 +1,7 @@
 import { OutgoingHttpHeader } from 'node:http';
 import { HttpHandler } from '../models/HttpHandler';
 import {
-  BadRequestHttpError,
+  BadRequestHttpError, createErrorMessage,
   getLoggerFor,
   HttpHandler as NodeHttpStreamsHandler,
   HttpHandlerInput,
@@ -104,11 +104,10 @@ export class NodeHttpRequestResponseHandler extends NodeHttpStreamsHandler {
       const status = error?.statusCode ?? error.status;
       const message = error?.message ?? error.body;
 
-      this.logger.warn(`Unhandled error is handled by Handlersjs: ${JSON.stringify(error)}`);
+      this.logger.warn(`Unhandled error: ${createErrorMessage(error)}`);
 
       return {
         headers: {},
-        ... error,
         body: message ?? 'Internal Server Error',
         status: statusCodes[status] ? status : 500
       };

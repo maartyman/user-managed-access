@@ -82,26 +82,23 @@
         "includeQueryString": true
       },
       "httpHandler": {
-        "@id": "urn:uma:default:RoutedHttpRequestHandler",
-        "@type": "RoutedHttpRequestHandler",
-        "handlerControllerList": [
-          {
-            "@id": "urn:uma:default:HttpHandlerController",
-            "@type": "HttpHandlerController",
-            "label": "ControllerList",
-            "routes": [
-              { "@id": "urn:uma:default:UmaConfigRoute" },
-              { "@id": "urn:uma:default:JwksRoute" },
-              { "@id": "urn:uma:default:TokenRoute" },
-              { "@id": "urn:uma:default:PermissionRegistrationRoute" },
-              { "@id": "urn:uma:default:ResourceRegistrationRoute" },
-              { "@id": "urn:uma:default:ResourceRegistrationOpsRoute" },
-              { "@id": "urn:uma:default:IntrospectionRoute" }
-            ]
-          }
-        ],
-        "defaultHandler": {
-          "@type": "DefaultRequestHandler"
+        "@type": "JsonHttpErrorHandler",
+        "nestedHandler": {
+          "@id": "urn:uma:default:HttpHandlerController",
+          "@type": "WaterfallHandler",
+          "handlers": [
+            { "@id": "urn:uma:default:UmaConfigRouteHandler" },
+            { "@id": "urn:uma:default:JwksRouteHandler" },
+            { "@id": "urn:uma:default:TokenRouteHandler" },
+            { "@id": "urn:uma:default:PermissionRegistrationRouteHandler" },
+            { "@id": "urn:uma:default:ResourceRegistrationRouteHandler" },
+            { "@id": "urn:uma:default:ResourceRegistrationOpsRouteHandler" },
+            { "@id": "urn:uma:default:IntrospectionRouteHandler" },
+            {
+              "@type": "StaticThrowHandler",
+              "error": { "@type": "NotFoundHttpError" }
+            }
+          ]
         }
       }
     },

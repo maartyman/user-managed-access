@@ -15,20 +15,21 @@
       }
     },
     {
-      "@id": "urn:uma:default:JwksRoute",
-      "@type": "HttpHandlerRoute",
-      "operations": [
-        {
-          "@type": "HttpHandlerOperation",
-          "method": "GET",
-          "publish": true
-        }
-      ],
+      "@id": "urn:uma:default:JwksRouteHandler",
+      "@type": "InteractionRouterHandler",
+      "allowedMethods": [ "GET" ],
+      "allowedRoutes": [{
+        "@id": "urn:uma:default:JwksRoute",
+        "@type": "RelativePathInteractionRoute",
+        "base": { "@type": "MatchAllRoute" },
+        "relativePath": "/uma/keys",
+        "ensureSlash": false
+      }],
       "handler": {
+        "@id": "urn:uma:default:JwksHandler",
         "@type": "JwksRequestHandler",
         "generator": { "@id": "urn:uma:default:JwkGenerator" }
-      },
-      "path": "/uma/keys"
+      }
     }
   ]
 }

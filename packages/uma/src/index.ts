@@ -26,7 +26,6 @@ export * from './policies/authorizers/PolicyBasedAuthorizer';
 export * from './policies/authorizers/WebIdAuthorizer';
 
 // Routes
-export * from './routes/Default';
 export * from './routes/Introspection';
 export * from './routes/Jwks';
 export * from './routes/Ticket';
@@ -52,14 +51,18 @@ export * from './views/ScopeDescription';
 
 /* Replace the following with CSS types */
 
+// Util
+export * from './util/HttpMessageSignatures';
+export * from './util/MatchAllRoute';
+export * from './util/Result';
+export * from './util/ReType';
+
 // HTTP
 export * from './util/http/identifier/BaseTargetExtractor';
 export * from './util/http/models/HttpHandler';
 export * from './util/http/models/HttpHandlerContext';
-export * from './util/http/models/HttpHandlerController';
 export * from './util/http/models/HttpHandlerRequest';
 export * from './util/http/models/HttpHandlerResponse';
-export * from './util/http/models/HttpHandlerRoute';
 export * from './util/http/server/ErrorHandler';
+export * from './util/http/server/InteractionRouterHandler';
 export * from './util/http/server/NodeHttpRequestResponseHandler';
-export * from './util/http/server/RoutedHttpRequestHandler';

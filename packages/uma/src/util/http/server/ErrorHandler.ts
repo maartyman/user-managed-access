@@ -69,10 +69,10 @@ export class JsonHttpErrorHandler extends HttpHandler {
    */
   async handle(context: HttpHandlerContext): Promise<HttpHandlerResponse> {
     try {
-      return this.nestedHandler.handle(context);
+      return await this.nestedHandler.handle(context);
     } catch (error) {
       this.logger.error(`Returned error for ${context.request.method} '${context.request.url}':` +
-      ` ${(error as Error).name} ${(error as Error).message} ${JSON.stringify(error)}`);
+      ` ${(error as Error).name} ${(error as Error).message}`);
 
       return {
         status: statusCodes[error?.statusCode] ? error.statusCode : 500,
@@ -85,6 +85,6 @@ export class JsonHttpErrorHandler extends HttpHandler {
           ...(error?.additionalParams?error.additionalParams:{}),
         }),
       };
-    };
+    }
   }
 }

@@ -9,7 +9,6 @@ import {
   readableToString,
   TargetExtractor
 } from '@solid/community-server';
-import { HttpHandlerContext } from '../models/HttpHandlerContext';
 import { HttpHandlerRequest } from '../models/HttpHandlerRequest';
 import { HttpHandlerResponse } from '../models/HttpHandlerResponse';
 import { statusCodes } from './ErrorHandler';
@@ -96,11 +95,9 @@ export class NodeHttpRequestResponseHandler extends NodeHttpStreamsHandler {
       body: await this.parseBody(requestStream),
     };
 
-    const context: HttpHandlerContext = { request: httpHandlerRequest };
+    this.logger.info(`Domestic request: ${JSON.stringify({ eventType: 'domestic_request', httpHandlerRequest })}`);
 
-    this.logger.info(`Domestic request: ${JSON.stringify({ eventType: 'domestic_request', context })}`);
-
-    let response = await this.httpHandler.handle(context).catch<HttpHandlerResponse<string>>((error) => {
+    let response = await this.httpHandler.handle(httpHandlerRequest).catch<HttpHandlerResponse<string>>((error) => {
       const status = error?.statusCode ?? error.status;
       const message = error?.message ?? error.body;
 

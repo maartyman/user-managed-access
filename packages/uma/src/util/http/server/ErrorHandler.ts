@@ -1,6 +1,6 @@
 import { getLoggerFor } from '@solid/community-server';
 import {HttpHandler} from '../models/HttpHandler';
-import {HttpHandlerContext} from '../models/HttpHandlerContext';
+import { HttpHandlerRequest } from '../models/HttpHandlerRequest';
 import {HttpHandlerResponse} from '../models/HttpHandlerResponse';
 
 export const statusCodes: { [code: number]: string } = {
@@ -64,14 +64,14 @@ export class JsonHttpErrorHandler extends HttpHandler {
   /**
    * Handle Http Request and catch any Errors that occur
    *
-   * @param {HttpHandlerContext} context - Request context
-   * @return {Observable<HttpHandlerResponse>}
+   * @param {HttpHandlerRequest} request - Request
+   * @return {HttpHandlerResponse}
    */
-  async handle(context: HttpHandlerContext): Promise<HttpHandlerResponse> {
+  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
     try {
-      return await this.nestedHandler.handle(context);
+      return await this.nestedHandler.handle(request);
     } catch (error) {
-      this.logger.error(`Returned error for ${context.request.method} '${context.request.url}':` +
+      this.logger.error(`Returned error for ${request.method} '${request.url}':` +
       ` ${(error as Error).name} ${(error as Error).message}`);
 
       return {

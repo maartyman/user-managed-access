@@ -2,7 +2,7 @@ import { ASYMMETRIC_CRYPTOGRAPHIC_ALGORITHM }
   from '@solid/access-token-verifier/dist/constant/ASYMMETRIC_CRYPTOGRAPHIC_ALGORITHM';
 import { getLoggerFor } from '@solid/community-server';
 import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerContext } from '../util/http/models/HttpHandlerContext';
+import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
 import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 
 // eslint-disable no-unused-vars
@@ -49,11 +49,11 @@ export class ConfigRequestHandler extends HttpHandler {
   /**
    * Returns the endpoint's UMA configuration
    *
-   * @param {HttpHandlerContext} context - an irrelevant incoming context
-   * @return {Observable<HttpHandlerResponse>} - the mock response
+   * @param {HttpHandlerRequest} request - an irrelevant incoming context
+   * @return {HttpHandlerResponse} - the mock response
    */
-  async handle(context: HttpHandlerContext): Promise<HttpHandlerResponse> {
-    this.logger.info(`Received discovery request at '${context.request.url}'`);
+  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
+    this.logger.info(`Received discovery request at '${request.url}'`);
 
     return {
       body: JSON.stringify(this.getConfig()),

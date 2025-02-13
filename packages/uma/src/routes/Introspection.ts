@@ -1,5 +1,5 @@
-import { HttpHandlerContext } from '../util/http/models/HttpHandlerContext';
 import { HttpHandler } from '../util/http/models/HttpHandler';
+import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
 import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { AccessToken } from '../tokens/AccessToken';
 import { JwtTokenFactory } from '../tokens/JwtTokenFactory';
@@ -28,17 +28,16 @@ export class IntrospectionHandler extends HttpHandler {
   constructor(
     private readonly tokenStore: KeyValueStorage<string, AccessToken>,
     private readonly jwtTokenFactory: JwtTokenFactory,
-    private readonly keyGen: JwkGenerator,
   ) {
     super();
   }
 
   /**
   * Handle incoming requests for token introspection
-  * @param {HttpHandlerContext} param0
-  * @return {Observable<HttpHandlerResponse<any>>}
+  * @param {HttpHandlerRequest} request
+  * @return {HttpHandlerResponse}
   */
-  async handle({request}: HttpHandlerContext): Promise<HttpHandlerResponse<any>> {
+  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse<any>> {
     if (!await verifyRequest(request)) throw new UnauthorizedHttpError();
 
     if (request.headers['content-type'] !== 'application/x-www-form-urlencoded') {

@@ -5,7 +5,7 @@ import {
   NotFoundHttpError
 } from '@solid/community-server';
 import { HttpHandler } from '../models/HttpHandler';
-import { HttpHandlerContext } from '../models/HttpHandlerContext';
+import { HttpHandlerRequest } from '../models/HttpHandlerRequest';
 import { HttpHandlerResponse } from '../models/HttpHandlerResponse';
 
 export interface InteractionRouterHandlerArgs {
@@ -34,7 +34,7 @@ export class InteractionRouterHandler extends HttpHandler {
   protected readonly allowedMethods?: string[];
   protected readonly allowedRoutes: InteractionRoute[];
 
-  protected readonly cache = new WeakMap<HttpHandlerContext, HttpHandlerContext>;
+  protected readonly cache = new WeakMap<HttpHandlerRequest, HttpHandlerRequest>;
 
   public constructor(args: InteractionRouterHandlerArgs) {
     super();
@@ -47,14 +47,14 @@ export class InteractionRouterHandler extends HttpHandler {
     }];
   }
 
-  public async canHandle(input: HttpHandlerContext): Promise<void> {
-    if (this.allowedMethods && !this.allowedMethods.includes(input.request.method)) {
-      throw new MethodNotAllowedHttpError([input.request.method]);
+  public async canHandle(request: HttpHandlerRequest): Promise<void> {
+    if (this.allowedMethods && !this.allowedMethods.includes(request.method)) {
+      throw new MethodNotAllowedHttpError([request.method]);
     }
 
     let match: Record<string, string> | undefined;
     for (const route of this.allowedRoutes) {
-      match = route.matchPath(input.request.url.toString());
+      match = route.matchPath(request.url.toString());
       if (match) {
         break;
       }
@@ -64,23 +64,20 @@ export class InteractionRouterHandler extends HttpHandler {
     }
 
 
-    const newInput: HttpHandlerContext = {
-      ...input,
-      request: {
-        ...input.request,
-        parameters: {
-          ...input.request.parameters,
-          ...match,
-        }
+    const newInput: HttpHandlerRequest = {
+      ...request,
+      parameters: {
+        ...request.parameters,
+        ...match,
       }
     }
     await this.handler.canHandle(newInput);
 
-    this.cache.set(input, newInput);
+    this.cache.set(request, newInput);
   }
 
-  public async handle(input: HttpHandlerContext): Promise<HttpHandlerResponse> {
-    const newInput = this.cache.get(input);
+  public async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
+    const newInput = this.cache.get(request);
     if (!newInput) {
       throw new InternalServerError('Calling handle before a successful canHandle Call');
     }

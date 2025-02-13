@@ -1,5 +1,5 @@
 import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerContext } from '../util/http/models/HttpHandlerContext';
+import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
 import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { getLoggerFor, JwkGenerator } from '@solid/community-server';
 
@@ -22,11 +22,11 @@ export class JwksRequestHandler extends HttpHandler {
 
   /**
      * Returns the JSON Web KeySet for specified keyholder
-     * @param {HttpHandlerContext} context - an irrelevant incoming context
-     * @return {Observable<HttpHandlerResponse>} - the JWKS response
+     * @param {HttpHandlerRequest} request
+     * @return {HttpHandlerResponse} - the JWKS response
      */
-  async handle(context: HttpHandlerContext): Promise<HttpHandlerResponse> {
-    this.logger.info(`Received JWKS request at '${context.request.url}'`);
+  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
+    this.logger.info(`Received JWKS request at '${request.url}'`);
 
     const key = await this.generator.getPublicKey();
 

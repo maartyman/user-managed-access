@@ -5,7 +5,7 @@ import {
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
 import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerContext } from '../util/http/models/HttpHandlerContext';
+import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
 import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { array, reType } from '../util/ReType';
 import { Permission } from '../views/Permission';
@@ -39,10 +39,10 @@ export class TicketRequestHandler extends HttpHandler {
 
   /**
   * Handle incoming requests for permission registration
-  * @param {HttpHandlerContext} param0
-  * @return {Observable<HttpHandlerResponse<PermissionRegistrationResponse>>}
+  * @param {HttpHandlerRequest} request
+  * @return {HttpHandlerResponse}
   */
-  async handle({request}: HttpHandlerContext): Promise<HttpHandlerResponse<any>> {
+  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
     this.logger.info(`Received permission registration request.`);
     if (!await verifyRequest(request)) throw new UnauthorizedHttpError();
 

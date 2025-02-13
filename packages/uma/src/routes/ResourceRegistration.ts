@@ -8,7 +8,6 @@ import {
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
 import {HttpHandler} from '../util/http/models/HttpHandler';
-import {HttpHandlerContext} from '../util/http/models/HttpHandlerContext';
 import {HttpHandlerResponse} from '../util/http/models/HttpHandlerResponse';
 import {v4} from 'uuid';
 import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
@@ -38,10 +37,10 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
 
   /**
   * Handle incoming requests for resource registration
-  * @param {HttpHandlerContext} param0
-  * @return {Observable<HttpHandlerResponse<PermissionRegistrationResponse>>}
+  * @param {HttpHandlerRequest} request
+  * @return {HttpHandlerResponse}
   */
-  async handle({ request }: HttpHandlerContext): Promise<HttpHandlerResponse<any>> {
+  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
     const signer = await extractRequestSigner(request);
 
     // TODO: check if signer is actually the correct one

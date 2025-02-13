@@ -5,7 +5,7 @@ import {
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
 import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerContext } from '../util/http/models/HttpHandlerContext';
+import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
 import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { Negotiator } from '../dialog/Negotiator';
 import { DialogInput } from '../dialog/Input';
@@ -27,18 +27,18 @@ export class TokenRequestHandler extends HttpHandler {
   /**
    * Handles an incoming token request.
    *
-   * @param {HttpHandlerContext} input - Request context
-   * @return {Observable<HttpHandlerResponse<any>>} - response
+   * @param {HttpHandlerRequest} request - Request context
+   * @return {HttpHandlerResponse} - response
    */
-  async handle(input: HttpHandlerContext): Promise<HttpHandlerResponse<any>> {
+  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
     this.logger.info(`Received token request.`);
 
     // This deviates from UMA, which reads application/x-www-form-urlencoded
-    if (input.request.headers['content-type'] !== 'application/json') {
+    if (request.headers['content-type'] !== 'application/json') {
       throw new UnsupportedMediaTypeHttpError();
     }
 
-    const params = input.request.body;
+    const params = request.body;
 
     // if (params['grant_type'] !== 'urn:ietf:params:oauth:grant-type:uma-ticket') {
     //   throw new BadRequestHttpError(

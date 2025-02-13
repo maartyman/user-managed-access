@@ -22,7 +22,7 @@ type ErrorConstructor = { new(msg: string): Error };
  *
  * It provides an endpoint to a Resource Server for requesting UMA tickets.
  */
-export class TicketRequestHandler implements HttpHandler {
+export class TicketRequestHandler extends HttpHandler {
   protected readonly logger = getLoggerFor(this);
 
   /**
@@ -33,7 +33,9 @@ export class TicketRequestHandler implements HttpHandler {
   constructor(
     private readonly ticketingStrategy: TicketingStrategy,
     private readonly ticketStore: KeyValueStorage<string, Ticket>,
-  ) {}
+  ) {
+    super();
+  }
 
   /**
   * Handle incoming requests for permission registration

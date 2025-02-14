@@ -1,12 +1,18 @@
 import {
+  APPLICATION_JSON,
   BadRequestHttpError,
+  CONTENT_TYPE,
   ForbiddenHttpError,
   getLoggerFor,
+  guardedStreamFrom,
+  OkResponseDescription,
+  OperationHttpHandler,
+  OperationHttpHandlerInput,
+  readableToString,
+  RepresentationMetadata,
+  ResponseDescription,
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
-import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
-import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { Negotiator } from '../dialog/Negotiator';
 import { DialogInput } from '../dialog/Input';
 import { reType } from '../util/ReType';
@@ -15,7 +21,7 @@ import { NeedInfoError } from '../errors/NeedInfoError';
 /**
  * The TokenRequestHandler implements the interface of the UMA Token Endpoint.
  */
-export class TokenRequestHandler extends HttpHandler {
+export class TokenRequestHandler extends OperationHttpHandler {
   protected readonly logger = getLoggerFor(this);
 
   constructor(
@@ -26,19 +32,16 @@ export class TokenRequestHandler extends HttpHandler {
 
   /**
    * Handles an incoming token request.
-   *
-   * @param {HttpHandlerRequest} request - Request context
-   * @return {HttpHandlerResponse} - response
    */
-  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
+  async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
     this.logger.info(`Received token request.`);
 
     // This deviates from UMA, which reads application/x-www-form-urlencoded
-    if (request.headers['content-type'] !== 'application/json') {
+    if (input.request.headers['content-type'] !== 'application/json') {
       throw new UnsupportedMediaTypeHttpError();
     }
 
-    const params = request.body;
+    const params = JSON.parse(await readableToString(input.operation.body.data));
 
     // if (params['grant_type'] !== 'urn:ietf:params:oauth:grant-type:uma-ticket') {
     //   throw new BadRequestHttpError(
@@ -55,20 +58,21 @@ export class TokenRequestHandler extends HttpHandler {
     try {
       const tokenResponse = await this.negotiator.negotiate(params);
 
-      return {
-        status: 200,
-        headers: {'content-type': 'application/json'},
-        body: JSON.stringify(tokenResponse)
-      };
+      return new OkResponseDescription(
+        new RepresentationMetadata({[CONTENT_TYPE]: APPLICATION_JSON}),
+        guardedStreamFrom(JSON.stringify(tokenResponse)),
+      );
     } catch (e) {
-      if (ForbiddenHttpError.isInstance(e)) return ({
-        status: 403,
-        headers: {'content-type': 'application/json'},
-        body: JSON.stringify({
-          ticket: (e as NeedInfoError).ticket,
-          ...(e as NeedInfoError).additionalParams
-        })
-      });
+      if (ForbiddenHttpError.isInstance(e)) {
+        return new ResponseDescription(
+          403,
+          new RepresentationMetadata({ [CONTENT_TYPE]: APPLICATION_JSON }),
+          guardedStreamFrom(JSON.stringify({
+            ticket: (e as NeedInfoError).ticket,
+            ...(e as NeedInfoError).additionalParams
+          }))
+        );
+      }
       throw e; // TODO: distinguish other errors
     }
   }

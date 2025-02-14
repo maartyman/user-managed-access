@@ -1,17 +1,16 @@
-import { OutgoingHttpHeader } from 'node:http';
-import { HttpHandler } from '../models/HttpHandler';
+import { OutgoingHttpHeaders } from 'node:http';
 import {
-  BadRequestHttpError, createErrorMessage,
+  BasicRepresentation,
+  createErrorMessage,
   getLoggerFor,
   HttpHandler as NodeHttpStreamsHandler,
   HttpHandlerInput,
-  HttpRequest,
-  readableToString,
+  OperationHttpHandler,
+  OperationHttpHandlerInput,
+  pipeSafely,
+  ResponseDescription,
   TargetExtractor
 } from '@solid/community-server';
-import { HttpHandlerRequest } from '../models/HttpHandlerRequest';
-import { HttpHandlerResponse } from '../models/HttpHandlerResponse';
-import { statusCodes } from './ErrorHandler';
 
 
 /**
@@ -23,47 +22,12 @@ export class NodeHttpRequestResponseHandler extends NodeHttpStreamsHandler {
 
   /**
    * Creates a { NodeHttpRequestResponseHandler } passing requests through the given handler.
-   *
-   * @param { HttpHandler } httpHandler - the handler through which to pass incoming requests.
    */
   constructor(
-    private httpHandler: HttpHandler,
+    private httpHandler: OperationHttpHandler,
     protected readonly targetExtractor: TargetExtractor,
   ) {
     super();
-  }
-
-  private async parseBody(requestStream: HttpRequest): Promise<string | Record<string, string>> {
-    const body = await readableToString(requestStream);
-    const contentType = requestStream.headers['content-type'];
-
-    this.logger.debug(`Parsing request body ${{ body, contentType }}`);
-
-    if (contentType?.startsWith('application/json')) {
-      try {
-        return JSON.parse(body);
-      } catch (error: any) {
-        throw new BadRequestHttpError(error instanceof Error ? error.message : '');
-      }
-    }
-
-    return body;
-
-  }
-
-  private parseResponseBody(
-    body: unknown,
-    contentType?: OutgoingHttpHeader,
-  ) {
-    // don't log the body if it is a buffer. It results in a long, illegible log.
-    this.logger.debug(`Parsing response body ${
-      JSON.stringify({ body: Buffer.isBuffer(body) ? '<Buffer>' : body, contentType })}`);
-
-    if (typeof contentType === 'string' && contentType?.startsWith('application/json')) {
-      return typeof body === 'string' || body instanceof Buffer ? body : JSON.stringify(body);
-    } else {
-      return body;
-    }
   }
 
   /**
@@ -76,7 +40,6 @@ export class NodeHttpRequestResponseHandler extends NodeHttpStreamsHandler {
    */
   async handle(nodeHttpStreams: HttpHandlerInput): Promise<void> {
     const { request: requestStream, response: responseStream } = nodeHttpStreams;
-    const { headers } = requestStream;
 
     if (!requestStream.method) {
       // No request method was received, this path is technically impossible to reach
@@ -84,80 +47,52 @@ export class NodeHttpRequestResponseHandler extends NodeHttpStreamsHandler {
       throw new Error('method of the request cannot be null or undefined.');
     }
 
-    // Make sure first param doesn't start with multiple slashes
-    const urlObject: URL = new URL((await this.targetExtractor.handleSafe({ request: requestStream })).path);
+    const input: OperationHttpHandlerInput = {
+      request: requestStream,
+      response: responseStream,
+      operation: {
+        method: requestStream.method,
+        target: await this.targetExtractor.handleSafe({ request: requestStream }),
+        preferences: {},
+        body: requestStream.headers['content-type'] ?
+          new BasicRepresentation(requestStream, requestStream.headers['content-type']) :
+          new BasicRepresentation(),
+      }
+    }
 
-    const httpHandlerRequest: HttpHandlerRequest<string | Record<string, string>> = {
-      url: urlObject,
-      method: requestStream.method,
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      headers: headers as { [key: string]: string },
-      body: await this.parseBody(requestStream),
-    };
+    this.logger.info(`Received ${input.operation.method} request targeting ${input.operation.target.path}`);
 
-    this.logger.info(`Domestic request: ${JSON.stringify({ eventType: 'domestic_request', httpHandlerRequest })}`);
-
-    let response = await this.httpHandler.handle(httpHandlerRequest).catch<HttpHandlerResponse<string>>((error) => {
+    let response = await this.httpHandler.handle(input).catch<ResponseDescription>((error) => {
       const status = error?.statusCode ?? error.status;
       const message = error?.message ?? error.body;
 
       this.logger.warn(`Unhandled error: ${createErrorMessage(error)}`);
 
-      return {
-        headers: {},
-        body: message ?? 'Internal Server Error',
-        status: statusCodes[status] ? status : 500
-      };
+      return new ResponseDescription(
+        500,
+        undefined,
+        message ?? 'Internal Server Error',
+      );
     });
 
-    response.headers = response.headers ?? {};
-    const contentTypeHeader = response.headers['content-type'] ?? response.headers['Content-Type'];
-
-    // If the body is not a string or a buffer, for example an object, stringify it. This is needed
-    // to use Buffer.byteLength and to eventually write the body to the response.
-    // Functions will result in 'undefined' which is desired behavior
-    const hasBody = Boolean(response.body && response.body !== '');
-    const body: string | Buffer | undefined = hasBody
-      ? typeof response.body === 'string' || Buffer.isBuffer(response.body)
-        ? response.body
-        : JSON.stringify(response.body)
-      : undefined;
-
-    const extraHeaders = {
-      ... (
-        hasBody &&
-        !contentTypeHeader &&
-        typeof response.body !== 'string' &&
-        !Buffer.isBuffer(response.body)
-      ) && {'content-type': 'application/json' },
-      ... hasBody && { 'content-length': Buffer.byteLength(body!).toString() },
-    };
-
-    response = {
-      ... response,
-      body,
-      headers: {
-        ... response.headers,
-        ... extraHeaders,
-      },
-    };
+    const contentTypeHeader = response.metadata?.contentType;
 
     this.logger.debug('Sending response');
 
-    responseStream.writeHead(response.status, response.headers);
-    if (hasBody) {
-      responseStream.write(this.parseResponseBody(response.body, contentTypeHeader));
+    // TODO: this needs to be more extensively based on metadata
+    const headers: OutgoingHttpHeaders = {
+      ... response.metadata?.contentType && { 'content-type': response.metadata?.contentType },
+    };
+
+    responseStream.writeHead(response.statusCode, headers);
+    if (response.data) {
+      const pipe = pipeSafely(response.data, responseStream);
+      pipe.on('error', (error): void => {
+        this.logger.error(`Aborting streaming response because of server error; headers already sent.`);
+        this.logger.error(`Response error: ${error.message}`);
+      });
+    } else {
+      responseStream.end();
     }
-
-    responseStream.end();
-
-    this.logger.info(`Domestic response: ${JSON.stringify({
-      eventType: 'domestic_response',
-      response: {
-        ... response,
-        // Set body to string '<Buffer>' if it is a Buffer Object to not pollute logs
-        ... (Buffer.isBuffer(body)) && { body: '<Buffer>' },
-      }
-    })}`);
   }
 }

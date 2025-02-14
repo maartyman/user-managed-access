@@ -1,12 +1,19 @@
 import {
+  APPLICATION_JSON,
   BadRequestHttpError,
+  CONTENT_TYPE,
   createErrorMessage,
-  getLoggerFor, KeyValueStorage, UnauthorizedHttpError,
+  getLoggerFor,
+  guardedStreamFrom,
+  KeyValueStorage,
+  OperationHttpHandler,
+  OperationHttpHandlerInput,
+  readableToString,
+  RepresentationMetadata,
+  ResponseDescription,
+  UnauthorizedHttpError,
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
-import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
-import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { array, reType } from '../util/ReType';
 import { Permission } from '../views/Permission';
 import { Ticket } from '../ticketing/Ticket';
@@ -22,13 +29,12 @@ type ErrorConstructor = { new(msg: string): Error };
  *
  * It provides an endpoint to a Resource Server for requesting UMA tickets.
  */
-export class TicketRequestHandler extends HttpHandler {
+export class TicketRequestHandler extends OperationHttpHandler {
   protected readonly logger = getLoggerFor(this);
 
   /**
    * A TicketRequestHandler is tasked with implementing
    * section 3.2 from the User-Managed Access (UMA) Profile of OAuth 2.0.
-   * @param {RequestingPartyRegistration[]} resourceServers - Pod Servers to be registered with the UMA AS
    */
   constructor(
     private readonly ticketingStrategy: TicketingStrategy,
@@ -39,44 +45,44 @@ export class TicketRequestHandler extends HttpHandler {
 
   /**
   * Handle incoming requests for permission registration
-  * @param {HttpHandlerRequest} request
-  * @return {HttpHandlerResponse}
   */
-  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
+  async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
     this.logger.info(`Received permission registration request.`);
-    if (!await verifyRequest(request)) throw new UnauthorizedHttpError();
+    if (!await verifyRequest(input.request, input.operation)) throw new UnauthorizedHttpError();
 
-    if (request.headers['content-type'] !== 'application/json') {
+    if (input.request.headers['content-type'] !== 'application/json') {
       throw new UnsupportedMediaTypeHttpError(
           'Only Media Type "application/json" is supported for this route.');
     }
 
-    if (!request.body || !Array.isArray(request.body)) {
+    const body = JSON.parse(await readableToString(input.operation.body.data));
+
+    if (!Array.isArray(body)) {
       this.error(BadRequestHttpError, 'Request body must be a JSON array.');
     }
 
     try {
-      reType(request.body, array(Permission));
+      reType(body, array(Permission));
     } catch (e) {
-      this.logger.debug(`Syntax error: ${createErrorMessage(e)}, ${request.body}`);
+      this.logger.debug(`Syntax error: ${createErrorMessage(e)}, ${body}`);
       e instanceof Error
         ? this.error(BadRequestHttpError, 'Request has bad syntax: ' + e.message)
         : this.error(BadRequestHttpError, 'Request has bad syntax');
     }
 
-    const ticket = await this.ticketingStrategy.initializeTicket(request.body);
+    const ticket = await this.ticketingStrategy.initializeTicket(body);
     const resolved = await this.ticketingStrategy.resolveTicket(ticket);
 
-    if (resolved.success) return { status: 200 };
+    if (resolved.success) return new ResponseDescription(200);
 
     const id = v4();
-    this.ticketStore.set(id, ticket);
+    await this.ticketStore.set(id, ticket);
 
-    return {
-      headers: {'content-type': 'application/json'},
-      status: 201,
-      body: { ticket: id },
-    };
+    return new ResponseDescription(
+      201,
+      new RepresentationMetadata({[CONTENT_TYPE]: APPLICATION_JSON}),
+      guardedStreamFrom(JSON.stringify({ ticket: id }))
+    );
   }
 
   /**

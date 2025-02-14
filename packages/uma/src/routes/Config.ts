@@ -1,9 +1,16 @@
 import { ASYMMETRIC_CRYPTOGRAPHIC_ALGORITHM }
   from '@solid/access-token-verifier/dist/constant/ASYMMETRIC_CRYPTOGRAPHIC_ALGORITHM';
-import { getLoggerFor } from '@solid/community-server';
-import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
-import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
+import {
+  APPLICATION_JSON,
+  CONTENT_TYPE,
+  getLoggerFor,
+  guardedStreamFrom,
+  OkResponseDescription,
+  OperationHttpHandler,
+  OperationHttpHandlerInput,
+  RepresentationMetadata,
+  ResponseDescription
+} from '@solid/community-server';
 
 // eslint-disable no-unused-vars
 export enum ResponseType {
@@ -34,7 +41,7 @@ export type UmaConfiguration = OAuthConfiguration & {
  * An HttpHandler used for returning the configuration
  * of the UMA Authorization Service.
  */
-export class ConfigRequestHandler extends HttpHandler {
+export class ConfigRequestHandler extends OperationHttpHandler {
   protected readonly logger = getLoggerFor(this);
 
   /**
@@ -48,18 +55,14 @@ export class ConfigRequestHandler extends HttpHandler {
 
   /**
    * Returns the endpoint's UMA configuration
-   *
-   * @param {HttpHandlerRequest} request - an irrelevant incoming context
-   * @return {HttpHandlerResponse} - the mock response
-   */
-  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
-    this.logger.info(`Received discovery request at '${request.url}'`);
+   **/
+  public async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
+    this.logger.info(`Received discovery request at '${input.operation.target.path}'`);
 
-    return {
-      body: JSON.stringify(this.getConfig()),
-      headers: {'content-type': 'application/json'},
-      status: 200,
-    };
+    return new OkResponseDescription(
+      new RepresentationMetadata({[CONTENT_TYPE]: APPLICATION_JSON}),
+      guardedStreamFrom(JSON.stringify(this.getConfig()))
+    )
   }
 
   /**

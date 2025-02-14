@@ -59,9 +59,6 @@ export * from './util/ReType';
 
 // HTTP
 export * from './util/http/identifier/BaseTargetExtractor';
-export * from './util/http/models/HttpHandler';
-export * from './util/http/models/HttpHandlerRequest';
-export * from './util/http/models/HttpHandlerResponse';
 export * from './util/http/server/ErrorHandler';
 export * from './util/http/server/InteractionRouterHandler';
 export * from './util/http/server/NodeHttpRequestResponseHandler';

@@ -1,7 +1,13 @@
-import { getLoggerFor } from '@solid/community-server';
-import {HttpHandler} from '../models/HttpHandler';
-import { HttpHandlerRequest } from '../models/HttpHandlerRequest';
-import {HttpHandlerResponse} from '../models/HttpHandlerResponse';
+import {
+  APPLICATION_JSON,
+  CONTENT_TYPE,
+  getLoggerFor,
+  guardedStreamFrom,
+  OperationHttpHandler,
+  OperationHttpHandlerInput,
+  RepresentationMetadata,
+  ResponseDescription
+} from '@solid/community-server';
 
 export const statusCodes: { [code: number]: string } = {
   400: 'Bad Request',
@@ -47,44 +53,41 @@ export const statusCodes: { [code: number]: string } = {
 };
 
 /**
- * Handler class that properly processes the HttpErrors from handlersjs-http
+ * Handler class that properly processes the HttpErrors
  */
-export class JsonHttpErrorHandler extends HttpHandler {
+export class JsonHttpErrorHandler extends OperationHttpHandler {
   protected readonly logger = getLoggerFor(this);
 
   /**
    * Creates an {ErrorHandler} that catches errors and returns an error response to the given handler.
    */
   constructor(
-    private nestedHandler: HttpHandler,
+    private nestedHandler: OperationHttpHandler,
   ) {
     super();
   }
 
   /**
    * Handle Http Request and catch any Errors that occur
-   *
-   * @param {HttpHandlerRequest} request - Request
-   * @return {HttpHandlerResponse}
    */
-  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
+  async handle(request: OperationHttpHandlerInput): Promise<ResponseDescription> {
     try {
       return await this.nestedHandler.handle(request);
     } catch (error) {
-      this.logger.error(`Returned error for ${request.method} '${request.url}':` +
+      this.logger.error(`Returned error for ${request.operation.method} '${request.operation.target.path}':` +
       ` ${(error as Error).name} ${(error as Error).message}`);
 
-      return {
-        status: statusCodes[error?.statusCode] ? error.statusCode : 500,
-        headers: {'content-type': 'application/json'},
-        body: JSON.stringify({
+      return new ResponseDescription(
+        statusCodes[error?.statusCode] ? error.statusCode : 500,
+        new RepresentationMetadata({[CONTENT_TYPE]: APPLICATION_JSON}),
+        guardedStreamFrom(JSON.stringify({
           'status': statusCodes[error?.statusCode] ? error.statusCode : 500,
           'description': statusCodes[error?.statusCode] ? statusCodes[error.statusCode] : statusCodes[500],
           'error': error?.type ?? error.type,
           'message': error?.message ?? error.message,
           ...(error?.additionalParams?error.additionalParams:{}),
-        }),
-      };
+        }))
+      );
     }
   }
 }

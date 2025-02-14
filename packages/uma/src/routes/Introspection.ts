@@ -1,13 +1,19 @@
-import { HttpHandler } from '../util/http/models/HttpHandler';
-import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
-import { HttpHandlerResponse } from '../util/http/models/HttpHandlerResponse';
 import { AccessToken } from '../tokens/AccessToken';
 import { JwtTokenFactory } from '../tokens/JwtTokenFactory';
 import { SerializedToken } from '../tokens/TokenFactory';
 import {
+  APPLICATION_JSON,
   BadRequestHttpError,
+  CONTENT_TYPE,
   getLoggerFor,
-  JwkGenerator, KeyValueStorage,
+  guardedStreamFrom,
+  KeyValueStorage,
+  OkResponseDescription,
+  OperationHttpHandler,
+  OperationHttpHandlerInput,
+  readableToString,
+  RepresentationMetadata,
+  ResponseDescription,
   UnauthorizedHttpError,
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
@@ -16,7 +22,7 @@ import { verifyRequest } from '../util/HttpMessageSignatures';
 /**
  * An HTTP handler that provides introspection into opaque access tokens.
  */
-export class IntrospectionHandler extends HttpHandler {
+export class IntrospectionHandler extends OperationHttpHandler {
   protected readonly logger = getLoggerFor(this);
 
   /**
@@ -34,36 +40,33 @@ export class IntrospectionHandler extends HttpHandler {
 
   /**
   * Handle incoming requests for token introspection
-  * @param {HttpHandlerRequest} request
-  * @return {HttpHandlerResponse}
   */
-  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse<any>> {
-    if (!await verifyRequest(request)) throw new UnauthorizedHttpError();
+  public async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
+    if (!await verifyRequest(input.request, input.operation)) throw new UnauthorizedHttpError();
 
-    if (request.headers['content-type'] !== 'application/x-www-form-urlencoded') {
+    if (input.request.headers['content-type'] !== 'application/x-www-form-urlencoded') {
       throw new UnsupportedMediaTypeHttpError(
           'Only Media Type "application/x-www-form-urlencoded" is supported for this route.');
     }
 
-    if (request.headers['accept'] !== 'application/json') {
+    if (input.request.headers['accept'] !== 'application/json') {
       throw new UnsupportedMediaTypeHttpError(
           'Only "application/json" can be served by this route.');
     }
 
-    if (!request.body || !(request.body instanceof Object)) {
+    if (input.operation.body.isEmpty) {
       throw new BadRequestHttpError('Missing request body.');
     }
 
     try {
-      const opaqueToken = new URLSearchParams(request.body as Record<string, string>).get('token');
+      const opaqueToken = new URLSearchParams(await readableToString(input.operation.body.data)).get('token');
       if (!opaqueToken) throw new Error ();
 
-      const jwt = this.opaqueToJwt(opaqueToken);
-      return {
-        headers: {'content-type': 'application/json'},
-        status: 200,
-        body: jwt,
-      };
+      const jwt = await this.opaqueToJwt(opaqueToken);
+      return new OkResponseDescription(
+        new RepresentationMetadata({[CONTENT_TYPE]: APPLICATION_JSON}),
+        guardedStreamFrom(JSON.stringify(jwt)),
+      );
     } catch (e) {
       throw new BadRequestHttpError('Invalid request body.');
     }

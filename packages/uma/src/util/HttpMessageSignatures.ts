@@ -1,16 +1,20 @@
-import { UnauthorizedHttpError, type AlgJwk, BadRequestHttpError, InternalServerError } from '@solid/community-server';
+import {
+  UnauthorizedHttpError,
+  type AlgJwk,
+  BadRequestHttpError,
+  HttpRequest, Operation
+} from '@solid/community-server';
 import { httpbis, type SigningKey, type Request as SignRequest } from 'http-message-signatures';
 import { verifyMessage } from 'http-message-signatures/lib/httpbis';
 import { type SignatureParameters, type VerifierFinder, type VerifyingKey } from 'http-message-signatures/lib/types';
-import type { HttpHandlerRequest } from './http/models/HttpHandlerRequest';
 import buildGetJwks from 'get-jwks';
 import crypto from 'node:crypto';
 
 const authParserMod = import('@httpland/authorization-parser');
 
 export async function signRequest(
-  url: string, 
-  request: RequestInit & Omit<SignRequest, 'url'>, 
+  url: string,
+  request: RequestInit & Omit<SignRequest, 'url'>,
   jwk: AlgJwk
 ): Promise<RequestInit & SignRequest> {
   const key: SigningKey = {
@@ -25,7 +29,7 @@ export async function signRequest(
   return await httpbis.signMessage<RequestInit & SignRequest>({ key }, { ...request, url });
 }
 
-export async function extractRequestSigner(request: HttpHandlerRequest): Promise<string> {
+export async function extractRequestSigner(request: HttpRequest): Promise<string> {
   const { authorization } = request.headers;
   if (!authorization) {
     throw new UnauthorizedHttpError('Missing authorization header in request.');
@@ -48,14 +52,15 @@ export async function extractRequestSigner(request: HttpHandlerRequest): Promise
 }
 
 export async function verifyRequest(
-  request: HttpHandlerRequest & SignRequest,
+  request: HttpRequest,
+  operation: Operation,
   signer?: string,
 ): Promise<boolean> {
   signer = signer ?? await extractRequestSigner(request);
-  
+
   if (signer.startsWith('"')) signer = signer.slice(1);
   if (signer.endsWith('"')) signer = signer.slice(0,-1);
-  
+
   const jwks = buildGetJwks();
 
   const keyLookup: VerifierFinder = async (params: SignatureParameters) => {
@@ -67,7 +72,7 @@ export async function verifyRequest(
         alg: alg ?? '',
         kid: keyid ?? '',
       })
-    
+
       if (!alg) throw new BadRequestHttpError('Invalid HTTP message Signature parameters.');
       // if (alg === 'EdDSA') throw new InternalServerError('EdDSA signing is not supported');
       // if (alg === 'ES256K') throw new InternalServerError('ES256K signing is not supported');
@@ -83,7 +88,7 @@ export async function verifyRequest(
           } catch (err) { console.log(err); return null }
         },
       };
-      
+
       return verifier;
 
     } catch (err) {
@@ -91,7 +96,11 @@ export async function verifyRequest(
     }
   };
 
-  const verified = await verifyMessage({ keyLookup }, request);
+  const verified = await verifyMessage({ keyLookup }, {
+    method: operation.method,
+    url: operation.target.path,
+    headers: request.headers as Record<string, string>,
+  });
   return verified ?? false;
 }
 
@@ -111,4 +120,3 @@ const algMap: Record<string, AlgParams> = {
   'RS384': { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-384' },
   'RS512': { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-512' },
 }
-

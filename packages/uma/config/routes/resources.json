@@ -37,6 +37,12 @@
         },
         "idName": "id"
       }],
+      "parameterMap": [
+        {
+          "InteractionRouterHandler:_args_parameterMap_key": "id",
+          "InteractionRouterHandler:_args_parameterMap_value": "urn:custom:uma:id"
+        }
+      ],
       "handler": { "@id": "urn:uma:default:ResourceRegistrationHandler" }
     }
   ]

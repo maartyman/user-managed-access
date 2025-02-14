@@ -1,16 +1,22 @@
 import {
+  APPLICATION_JSON,
   BadRequestHttpError,
+  CONTENT_TYPE,
   createErrorMessage,
   getLoggerFor,
+  guardedStreamFrom,
   KeyValueStorage,
   MethodNotAllowedHttpError,
+  OperationHttpHandler,
+  OperationHttpHandlerInput,
+  readableToString,
+  RepresentationMetadata,
+  ResponseDescription,
   UnauthorizedHttpError,
   UnsupportedMediaTypeHttpError
 } from '@solid/community-server';
-import {HttpHandler} from '../util/http/models/HttpHandler';
-import {HttpHandlerResponse} from '../util/http/models/HttpHandlerResponse';
 import {v4} from 'uuid';
-import { HttpHandlerRequest } from '../util/http/models/HttpHandlerRequest';
+import { CUSTOM_UMA } from '../util/Vocabularies';
 import { ResourceDescription } from '../views/ResourceDescription';
 import { reType } from '../util/ReType';
 import { extractRequestSigner, verifyRequest } from '../util/HttpMessageSignatures';
@@ -23,12 +29,9 @@ type ErrorConstructor = { new(msg: string): Error };
  *
  * It provides an endpoint to a Resource Server for registering its resources.
  */
-export class ResourceRegistrationRequestHandler extends HttpHandler {
+export class ResourceRegistrationRequestHandler extends OperationHttpHandler {
   protected readonly logger = getLoggerFor(this);
 
-  /**
-   * @param {RequestingPartyRegistration[]} resourceServers - Pod Servers to be registered with the UMA AS
-   */
   constructor(
     private readonly resourceStore: KeyValueStorage<string, ResourceDescription>,
   ) {
@@ -37,31 +40,29 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
 
   /**
   * Handle incoming requests for resource registration
-  * @param {HttpHandlerRequest} request
-  * @return {HttpHandlerResponse}
   */
-  async handle(request: HttpHandlerRequest): Promise<HttpHandlerResponse> {
-    const signer = await extractRequestSigner(request);
+  async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
+    const signer = await extractRequestSigner(input.request);
 
     // TODO: check if signer is actually the correct one
 
-    if (!await verifyRequest(request, signer)) {
+    if (!await verifyRequest(input.request, input.operation, signer)) {
       throw new UnauthorizedHttpError(`Failed to verify signature of <${signer}>`);
     }
 
-    switch (request.method) {
-      case 'POST': return this.handlePost(request);
-      case 'DELETE': return this.handleDelete(request);
+    switch (input.operation.method) {
+      case 'POST': return this.handlePost(input);
+      case 'DELETE': return this.handleDelete(input);
       default: throw new MethodNotAllowedHttpError();
     }
   }
 
-  private async handlePost(request: HttpHandlerRequest): Promise<HttpHandlerResponse<any>> {
-    const { headers, body } = request;
-
-    if (headers['content-type'] !== 'application/json') {
+  private async handlePost(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
+    if (input.request.headers['content-type'] !== 'application/json') {
       throw new UnsupportedMediaTypeHttpError('Only Media Type "application/json" is supported for this route.');
     }
+
+    const body = JSON.parse(await readableToString(input.operation.body.data));
 
     try {
       reType(body, ResourceDescription);
@@ -71,35 +72,31 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
     }
 
     const resource = v4();
-    this.resourceStore.set(resource, body);
+    await this.resourceStore.set(resource, body);
 
     this.logger.info(`Registered resource ${resource}.`);
 
-    return ({
-      status: 201,
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
+    return new ResponseDescription(
+      201,
+      new RepresentationMetadata({ [CONTENT_TYPE]: APPLICATION_JSON }),
+      guardedStreamFrom(JSON.stringify({
         _id: resource,
         user_access_policy_uri: 'TODO: implement policy UI',
-      }),
-    })
+      }))
+    );
   }
 
-  private async handleDelete({ parameters }: HttpHandlerRequest): Promise<HttpHandlerResponse<any>> {
-    if (typeof parameters?.id !== 'string') throw new Error('URI for DELETE operation should include an id.');
+  private async handleDelete(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
+    const id = input.operation.body.metadata.get(CUSTOM_UMA.terms.id)?.value;
+    if (!id) throw new Error('URI for DELETE operation should include an id.');
 
-    if (!await this.resourceStore.has(parameters.id)) {
+    if (!await this.resourceStore.has(id)) {
       throw new Error('Registration to be deleted does not exist (id unknown).');
     }
 
-    this.logger.info(`Deleted resource ${parameters.id}.`);
+    this.logger.info(`Deleted resource ${id}.`);
 
-    return ({
-      status: 204,
-      headers: {},
-    });
+    return new ResponseDescription(204);
   }
 
   /**

@@ -53,9 +53,11 @@
   "scripts": {
     "prepare": "yarn build:all",
     "clean": "shx rm -rf ./**/node_modules",
+    "build": "yarn workspaces foreach --include 'packages/*' -A -pi -t run build",
     "build:all": "yarn workspaces foreach --include 'packages/*' -A -pi -t run build",
     "build:demo": "cd demo && yarn build:demo",
     "test:all": "yarn workspaces foreach --include 'packages/*' -A -pi run test",
+    "start": "yarn workspaces foreach --include 'packages/*' -A -pi run start",
     "start:all": "yarn workspaces foreach --include 'packages/*' -A -pi run start",
     "start:demo": "concurrently 'yarn start:demo:sites' 'yarn start:demo:servers'",
     "start:demo:servers": "yarn workspaces foreach --include 'packages/*' -A -pi run demo",

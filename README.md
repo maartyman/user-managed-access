@@ -44,6 +44,6 @@ docker compose up
 ### Running the Pacsoi demo flow
 Following the demo flow, first run this AS either directly or in the docker image.
 
-Secondly, run the mock resource server.
+Secondly, run the mock resource server, located [here](https://github.com/SolidLabResearch/UMA_Resource_Server).
 
-Thirdly, run the external client flow.
+Thirdly, run the external client flow located [here](https://github.com/SolidLabResearch/UMA_Client).

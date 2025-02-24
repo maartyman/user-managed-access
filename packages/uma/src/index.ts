@@ -16,6 +16,7 @@ export * from './dialog/Input';
 export * from './dialog/Output';
 export * from './dialog/Negotiator';
 export * from './dialog/BaseNegotiator';
+export * from './dialog/ContractNegotiator';
 
 // Authorizers
 export * from './policies/authorizers/Authorizer';
@@ -47,6 +48,7 @@ export * from './tokens/TokenFactory';
 
 // Views
 export * from './views/Permission';
+export * from './views/Contract';
 export * from './views/ResourceDescription';
 export * from './views/ScopeDescription';
 

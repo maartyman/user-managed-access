@@ -89,7 +89,7 @@ export class BaseNegotiator implements Negotiator {
    * 
    * @returns The Ticket describing the dialog at hand.
    */
-  private async getTicket(input: DialogInput): Promise<Ticket> {
+  protected async getTicket(input: DialogInput): Promise<Ticket> {
     const { ticket, permissions } = input;
 
     if (ticket) {
@@ -116,7 +116,7 @@ export class BaseNegotiator implements Negotiator {
    * 
    * @returns An updated Ticket in which the Credentials have been validated.
    */
-  private async processCredentials(input: DialogInput, ticket: Ticket): Promise<Ticket> {
+  protected async processCredentials(input: DialogInput, ticket: Ticket): Promise<Ticket> {
     const { claim_token: token, claim_token_format: format } = input;
 
     if (token || format) {
@@ -140,7 +140,7 @@ export class BaseNegotiator implements Negotiator {
    * @throws An Error constructed with the provided constructor with the
    * provided message
    */
-  private error(constructor: ErrorConstructor, message: string): never {
+  protected error(constructor: ErrorConstructor, message: string): never {
     this.logger.warn(message);
     throw new constructor(message);
   }

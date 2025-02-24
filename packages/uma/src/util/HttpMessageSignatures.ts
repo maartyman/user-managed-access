@@ -87,6 +87,7 @@ export async function verifyRequest(
       return verifier;
 
     } catch (err) {
+      this.logger.warn(`Something went wrong during signature checking: ${err.message}`)
       throw new Error(`Something went wrong during signature checking: ${err.message}`)
     }
   };

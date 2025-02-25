@@ -5,11 +5,8 @@
   "@graph": [
     {
       "@id": "urn:uma:default:TokenFactory",
-      "@type": "JwtTokenFactory",
-      "params_expirationTime": "5m",
-      "params_aud": "solid",
-      "issuer": { "@id": "urn:uma:variables:baseUrl" },
-      "keyGen": { "@id": "urn:uma:default:JwkGenerator" }
+      "@type": "OpaqueTokenFactory",
+      "tokenStore": { "@id": "urn:uma:default:TokenStore" }
     }
   ]
 }

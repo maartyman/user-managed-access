@@ -43,6 +43,7 @@ export * from './ticketing/strategy/ImmediateAuthorizerStrategy';
 // Tokens
 export * from './tokens/AccessToken';
 export * from './tokens/JwtTokenFactory';
+export * from './tokens/OpaqueTokenFactory';
 export * from './tokens/TokenFactory';
 
 // Views

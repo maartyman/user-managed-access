@@ -61,7 +61,7 @@ async function main() {
 
   const asResponse = await asRequestResponse.json()
 
-  const decodedToken = parseJwt(asResponse.access_token);
+  // const decodedToken = parseJwt(asResponse.access_token);
 
   console.log(`= Status: ${asRequestResponse.status}\n`);
   console.log(`= Body (decoded):\n`);

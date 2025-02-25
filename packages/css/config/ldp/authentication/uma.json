@@ -25,7 +25,7 @@
             "ownerUtil": {
               "@id": "urn:solid-server:default:OwnerUtil"
             },
-            "introspect": false
+            "introspect": true
           },
           {
             "@type": "PublicCredentialsExtractor"

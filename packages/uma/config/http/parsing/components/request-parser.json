@@ -1,0 +1,44 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^7.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solidlab/uma/^0.0.0/components/context.jsonld"
+  ],
+  "@graph": [
+    {
+      "comment": "Handles everything related to parsing a Request.",
+      "@id": "urn:uma:default:RequestParser",
+      "@type": "BasicRequestParser",
+      "targetExtractor": {
+        "@id": "urn:uma:default:TargetExtractor",
+        "@type": "BaseTargetExtractor",
+        "includeQueryString": true
+      },
+      "preferenceParser": {
+        "@id": "urn:uma:default:PreferenceParser",
+        "@type": "AcceptPreferenceParser"
+      },
+      "metadataParser": {
+        "comment": "Converts request metadata (e.g. headers) to RDF metadata.",
+        "@id": "urn:uma:default:MetadataParser",
+        "@type": "ParallelHandler",
+        "handlers": [
+          {
+            "@id": "urn:uma:default:ContentTypeParser",
+            "@type": "ContentTypeParser"
+          }
+        ]
+      },
+      "conditionsParser": {
+        "@type": "BasicConditionsParser",
+        "eTagHandler": {
+          "@id": "urn:uma:default:ETagHandler",
+          "@type": "BasicETagHandler"
+        }
+      },
+      "bodyParser": {
+        "@id": "urn:uma:default:BodyParser",
+        "@type": "RawBodyParser"
+      }
+    }
+  ]
+}

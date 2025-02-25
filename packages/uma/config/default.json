@@ -6,6 +6,8 @@
   "import": [
     "sai-uma:config/credentials/verifiers/default.json",
     "sai-uma:config/dialog/negotiators/default.json",
+    "sai-uma:config/http/cors/cors.json",
+    "sai-uma:config/http/parsing/server.json",
     "sai-uma:config/policies/authorizers/default.json",
     "sai-uma:config/resources/storage/default.json",
     "sai-uma:config/routes/discovery.json",
@@ -35,7 +37,7 @@
           "@id": "urn:uma:default:HandlerServerConfigurator",
           "@type": "HandlerServerConfigurator",
           "handler": {
-            "@id": "urn:uma:default:NodeHttpRequestResponseHandler"
+            "@id": "urn:uma:default:HttpHandler"
           }
         }
       }
@@ -44,62 +46,40 @@
       "@id": "urn:uma:default:HttpHandler",
       "@type": "SequenceHandler",
       "handlers": [
-        {
-          "comment": "Adds all the necessary CORS headers.",
-          "@id": "urn:uma:default:CorsHandler",
-          "@type": "CorsHandler",
-          "options_methods": [
-            "GET",
-            "HEAD",
-            "OPTIONS",
-            "POST",
-            "PUT",
-            "PATCH",
-            "DELETE"
-          ],
-          "options_credentials": true,
-          "options_preflightContinue": false,
-          "options_exposedHeaders": [
-            "Allow",
-            "ETag",
-            "Last-Modified",
-            "Link",
-            "Location",
-            "Updates-Via",
-            "Www-Authenticate"
-          ]
-        },
-        {
-          "@id": "urn:uma:default:NodeHttpRequestResponseHandler"
-        }
+        { "@id": "urn:uma:default:CorsHandler" },
+        { "@id": "urn:uma:default:ParsingHttpHandler" }
       ]
     },
     {
-      "@id": "urn:uma:default:NodeHttpRequestResponseHandler",
-      "@type": "NodeHttpRequestResponseHandler",
-      "targetExtractor": {
-        "@type": "BaseTargetExtractor",
-        "includeQueryString": true
-      },
-      "httpHandler": {
-        "@type": "JsonHttpErrorHandler",
-        "nestedHandler": {
-          "@id": "urn:uma:default:HttpHandlerController",
-          "@type": "WaterfallHandler",
-          "handlers": [
-            { "@id": "urn:uma:default:UmaConfigRouteHandler" },
-            { "@id": "urn:uma:default:JwksRouteHandler" },
-            { "@id": "urn:uma:default:TokenRouteHandler" },
-            { "@id": "urn:uma:default:PermissionRegistrationRouteHandler" },
-            { "@id": "urn:uma:default:ResourceRegistrationRouteHandler" },
-            { "@id": "urn:uma:default:ResourceRegistrationOpsRouteHandler" },
-            { "@id": "urn:uma:default:IntrospectionRouteHandler" },
-            {
-              "@type": "StaticThrowHandler",
-              "error": { "@type": "NotFoundHttpError" }
-            }
-          ]
-        }
+      "comment": "The main entry point into the main Solid behaviour.",
+      "@id": "urn:uma:default:ParsingHttpHandler",
+      "@type": "ParsingHttpHandler",
+      "requestParser": { "@id": "urn:uma:default:RequestParser" },
+      "errorHandler": { "@id": "urn:uma:default:ErrorHandler" },
+      "responseWriter": { "@id": "urn:uma:default:ResponseWriter" },
+      "operationHandler": {
+        "@id": "urn:uma:default:JsonHttpErrorHandler"
+      }
+    },
+    {
+      "@id": "urn:uma:default:JsonHttpErrorHandler",
+      "@type": "JsonHttpErrorHandler",
+      "nestedHandler": {
+        "@id": "urn:uma:default:HttpHandlerController",
+        "@type": "WaterfallHandler",
+        "handlers": [
+          { "@id": "urn:uma:default:UmaConfigRouteHandler" },
+          { "@id": "urn:uma:default:JwksRouteHandler" },
+          { "@id": "urn:uma:default:TokenRouteHandler" },
+          { "@id": "urn:uma:default:PermissionRegistrationRouteHandler" },
+          { "@id": "urn:uma:default:ResourceRegistrationRouteHandler" },
+          { "@id": "urn:uma:default:ResourceRegistrationOpsRouteHandler" },
+          { "@id": "urn:uma:default:IntrospectionRouteHandler" },
+          {
+            "@type": "StaticThrowHandler",
+            "error": { "@type": "NotFoundHttpError" }
+          }
+        ]
       }
     },
     {

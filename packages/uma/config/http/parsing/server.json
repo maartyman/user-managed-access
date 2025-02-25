@@ -1,0 +1,11 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solidlab/uma/^0.0.0/components/context.jsonld",
+  "import": [
+    "sai-uma:config/http/parsing/components/error-handler.json",
+    "sai-uma:config/http/parsing/components/parsing.json",
+    "sai-uma:config/http/parsing/components/request-parser.json",
+    "sai-uma:config/http/parsing/components/response-writer.json"
+  ],
+  "@graph": [
+  ]
+}

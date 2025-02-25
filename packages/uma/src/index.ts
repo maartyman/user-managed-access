@@ -61,4 +61,3 @@ export * from './util/ReType';
 export * from './util/http/identifier/BaseTargetExtractor';
 export * from './util/http/server/ErrorHandler';
 export * from './util/http/server/InteractionRouterHandler';
-export * from './util/http/server/NodeHttpRequestResponseHandler';

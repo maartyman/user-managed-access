@@ -1,15 +1,23 @@
 {
-  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^7.0.0/components/context.jsonld",
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solidlab/uma/^0.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^7.0.0/components/context.jsonld"
+  ],
   "@graph": [
     {
-      "comment": "Wraps around the main error handler as a fallback in case something goes wrong.",
       "@id": "urn:uma:default:ErrorHandler",
-      "@type": "SafeErrorHandler",
-      "errorHandler": {
-        "comment": "Redirects are created internally by throwing a specific error; this handler converts them to the correct response.",
-        "@id": "urn:uma:default:RedirectingErrorHandler",
-        "@type": "RedirectingErrorHandler"
-      }
+      "@type": "WaterfallHandler",
+      "handlers": [
+        {
+          "comment": "Redirects are created internally by throwing a specific error; this handler converts them to the correct response.",
+          "@id": "urn:uma:default:RedirectingErrorHandler",
+          "@type": "RedirectingErrorHandler"
+        },
+        {
+          "@id": "urn:uma:default:JsonErrorHandler",
+          "@type": "JsonErrorHandler"
+        }
+      ]
     }
   ]
 }

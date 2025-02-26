@@ -58,29 +58,25 @@
       "errorHandler": { "@id": "urn:uma:default:ErrorHandler" },
       "responseWriter": { "@id": "urn:uma:default:ResponseWriter" },
       "operationHandler": {
-        "@id": "urn:uma:default:JsonHttpErrorHandler"
+        "@id": "urn:uma:default:HttpHandlerController"
       }
     },
     {
-      "@id": "urn:uma:default:JsonHttpErrorHandler",
-      "@type": "JsonHttpErrorHandler",
-      "nestedHandler": {
-        "@id": "urn:uma:default:HttpHandlerController",
-        "@type": "WaterfallHandler",
-        "handlers": [
-          { "@id": "urn:uma:default:UmaConfigRouteHandler" },
-          { "@id": "urn:uma:default:JwksRouteHandler" },
-          { "@id": "urn:uma:default:TokenRouteHandler" },
-          { "@id": "urn:uma:default:PermissionRegistrationRouteHandler" },
-          { "@id": "urn:uma:default:ResourceRegistrationRouteHandler" },
-          { "@id": "urn:uma:default:ResourceRegistrationOpsRouteHandler" },
-          { "@id": "urn:uma:default:IntrospectionRouteHandler" },
-          {
-            "@type": "StaticThrowHandler",
-            "error": { "@type": "NotFoundHttpError" }
-          }
-        ]
-      }
+      "@id": "urn:uma:default:HttpHandlerController",
+      "@type": "WaterfallHandler",
+      "handlers": [
+        { "@id": "urn:uma:default:UmaConfigRouteHandler" },
+        { "@id": "urn:uma:default:JwksRouteHandler" },
+        { "@id": "urn:uma:default:TokenRouteHandler" },
+        { "@id": "urn:uma:default:PermissionRegistrationRouteHandler" },
+        { "@id": "urn:uma:default:ResourceRegistrationRouteHandler" },
+        { "@id": "urn:uma:default:ResourceRegistrationOpsRouteHandler" },
+        { "@id": "urn:uma:default:IntrospectionRouteHandler" },
+        {
+          "@type": "StaticThrowHandler",
+          "error": { "@type": "NotFoundHttpError" }
+        }
+      ]
     },
     {
       "comment": "Configuration for the UMA AS."

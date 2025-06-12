@@ -20,6 +20,7 @@ export * from './dialog/BaseNegotiator';
 // Authorizers
 export * from './policies/authorizers/Authorizer';
 export * from './policies/authorizers/AllAuthorizer';
+export * from './policies/authorizers/JSONBasedAuthorizer';
 export * from './policies/authorizers/NamespacedAuthorizer';
 export * from './policies/authorizers/NoneAuthorizer';
 export * from './policies/authorizers/PolicyBasedAuthorizer';

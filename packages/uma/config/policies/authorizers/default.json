@@ -6,46 +6,8 @@
   "@graph": [
     {
       "@id": "urn:uma:default:Authorizer",
-      "@type": "NamespacedAuthorizer",
-      "authorizers": [
-        {
-          "NamespacedAuthorizer:_authorizers_key": "profile",
-          "NamespacedAuthorizer:_authorizers_value": {
-            "@id": "urn:uma:default:AllAuthorizer",
-            "@type": "AllAuthorizer"
-          }
-        },
-        {
-          "NamespacedAuthorizer:_authorizers_key": "public",
-          "NamespacedAuthorizer:_authorizers_value": {
-            "@id": "urn:uma:default:AllAuthorizer"
-          }
-        },
-        {
-          "NamespacedAuthorizer:_authorizers_key": "private",
-          "NamespacedAuthorizer:_authorizers_value": {
-            "@id": "urn:uma:default:WebIdAuthorizer",
-            "@type": "WebIdAuthorizer",
-            "webids": [
-              "https://woslabbi.pod.knows.idlab.ugent.be/profile/card#me"
-            ]
-          }
-        }
-      ],
-      "fallback": {
-        "@id": "urn:uma:default:PolicyBasedAuthorizer",
-        "@type": "PolicyBasedAuthorizer",
-        "rulesDir": {
-          "@id": "urn:uma:variables:rulesDir"
-        },
-        "policies": {
-          "@id": "urn:uma:default:RulesStorage",
-          "@type": "DirectoryUCRulesStorage",
-          "directoryPath": {
-            "@id": "urn:uma:variables:policyDir"
-          }
-        }
-      }
+      "@type": "JSONBasedAuthorizer",
+      "rulesFile": "/home/maarten/Documents/doctoraat/code/user-managed-access/packages/uma/config/rules/json/rules.json"
     }
   ]
 }

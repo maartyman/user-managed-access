@@ -1,0 +1,17 @@
+{
+  "http://localhost:5000/config": {
+    "https://pod.playground.solidlab.be/user1/profile/card#me": [
+      "urn:example:css:modes:modify"
+    ],
+    "*": [
+      "urn:example:css:modes:read",
+      "urn:example:css:modes:modify"
+    ]
+  },
+  "http://localhost:5000/7bb4901b-233f-43ab-ba71-413e1c604e9e": {
+    "*": [
+      "urn:example:css:modes:read",
+      "urn:example:css:modes:modify"
+    ]
+  }
+}

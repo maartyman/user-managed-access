@@ -81,11 +81,7 @@ export class JwtTokenFactory extends TokenFactory {
         throw new Error('missing required "permissions" claim.');
       }
 
-      const permissions = payload.permissions;
-
-      reType(permissions, array(Permission));
-
-      return { permissions };
+      return payload as AccessToken;
     } catch (error: unknown) {
       const msg = `Invalid Access Token provided, error while parsing: ${createErrorMessage(error)}`;
       this.logger.warn(msg);

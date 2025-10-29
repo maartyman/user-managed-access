@@ -41,7 +41,7 @@ export class NamespacedAuthorizer implements Authorizer {
     for (let i = 1; i < query.length; ++i) {
       if ((query[i].resource_id ? await this.findNamespace(query[i].resource_id) : undefined) !== ns) {
         this.logger.warn(`Cannot calculate permissions over multiple namespaces at once.`);
-        return [];
+        return this.fallback.permissions(claims, query);
       }
     }
 
@@ -66,7 +66,7 @@ export class NamespacedAuthorizer implements Authorizer {
     for (let i = 1; i < permissions.length; ++i) {
       if (await this.findNamespace(permissions[i].resource_id) !== ns) {
         this.logger.warn(`Cannot calculate credentials over multiple namespaces at once.`);
-        return [];
+        return this.fallback.credentials(permissions, query);
       }
     }
 

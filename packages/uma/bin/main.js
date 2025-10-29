@@ -2,30 +2,56 @@ const path = require('path');
 const { ComponentsManager } = require('componentsjs');
 const { setGlobalLoggerFactory, WinstonLoggerFactory } = require('@solid/community-server');
 
-const protocol = 'http';
-const host = 'localhost';
-const port = 4000;
+function parseArgs(argv) {
+  const result = {};
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (!arg.startsWith('--')) {
+      continue;
+    }
+    const [key, value] = arg.includes('=') ? arg.split('=') : [arg, argv[i + 1]];
+    const normalizedKey = key.replace(/^--/, '');
+    if (value === undefined || value.startsWith('--')) {
+      result[normalizedKey] = true;
+      if (value && value.startsWith('--')) {
+        i--;
+      }
+    } else {
+      result[normalizedKey] = value;
+      if (!arg.includes('=')) {
+        i++;
+      }
+    }
+  }
+  return result;
+}
 
-const baseUrl = `${protocol}://${host}:${port}/uma`;
-const rootDir = path.join(__dirname, '../');
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
 
-const launch = async () => {
+  const logLevel = (args['log-level'] || 'info').toLowerCase();
+  const port = Number(args.port || 4000);
+  if (!Number.isFinite(port)) {
+    throw new Error(`Invalid UMA port value: ${args.port}`);
+  }
+  const rootDir = path.join(__dirname, '../');
+  const baseUrl = args['base-url'] || `http://localhost:${port}/uma`;
+  const policyBase = args['policy-base'] || 'http://localhost:3000/';
+
   const variables = {};
-
   variables['urn:uma:variables:port'] = port;
   variables['urn:uma:variables:baseUrl'] = baseUrl;
-
-  variables['urn:uma:variables:policyBaseIRI'] = 'http://localhost:3000/';
+  variables['urn:uma:variables:policyBaseIRI'] = policyBase;
   variables['urn:uma:variables:policyDir'] = path.join(rootDir, './config/rules/policy');
   variables['urn:uma:variables:eyePath'] = 'eye';
 
   const configPath = path.join(rootDir, './config/default.json');
 
-  setGlobalLoggerFactory(new WinstonLoggerFactory('info'));
+  setGlobalLoggerFactory(new WinstonLoggerFactory(logLevel));
 
   const manager = await ComponentsManager.build({
     mainModulePath: rootDir,
-    logLevel: 'silly',
+    logLevel,
     typeChecking: false,
   });
 
@@ -35,4 +61,7 @@ const launch = async () => {
   await umaServer.start();
 };
 
-launch();
+main().catch((error) => {
+  console.error('Failed to start UMA server:', error);
+  process.exit(1);
+});

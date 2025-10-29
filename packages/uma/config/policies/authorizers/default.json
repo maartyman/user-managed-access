@@ -14,47 +14,11 @@
             "@id": "urn:uma:default:AllAuthorizer",
             "@type": "AllAuthorizer"
           }
-        },
-        {
-          "NamespacedAuthorizer:_authorizers_key": "public",
-          "NamespacedAuthorizer:_authorizers_value": {
-            "@id": "urn:uma:default:AllAuthorizer"
-          }
-        },
-        {
-          "NamespacedAuthorizer:_authorizers_key": "credentials",
-          "NamespacedAuthorizer:_authorizers_value": {
-            "@id": "urn:uma:default:WebIdAuthorizer",
-            "@type": "WebIdAuthorizer",
-            "webids": [
-              "https://pod.rubendedecker.be/profile/card#me",
-              "https://woslabbi.pod.knows.idlab.ugent.be/profile/card#me",
-              "http://localhost:3000/ruben/profile/card#me",
-              "http://localhost:3000/alice/profile/card#me"
-            ]
-          }
-        },
-        {
-          "NamespacedAuthorizer:_authorizers_key": "settings",
-          "NamespacedAuthorizer:_authorizers_value": {
-            "@id": "urn:uma:default:WebIdAuthorizer",
-            "@type": "WebIdAuthorizer",
-            "webids": [
-              "https://pod.rubendedecker.be/profile/card#me",
-              "https://woslabbi.pod.knows.idlab.ugent.be/profile/card#me",
-              "http://localhost:3000/ruben/profile/card#me",
-              "http://localhost:3000/alice/profile/card#me"
-            ]
-          }
         }
       ],
       "fallback": {
-        "@id": "urn:uma:default:OdrlAuthorizer",
-        "@type": "OdrlAuthorizer",
-        "eyePath": { "@id": "urn:uma:variables:eyePath" },
-        "policies": {
-          "@id": "urn:uma:default:RulesStorage"
-        }
+        "@id": "urn:uma:default:AllWebIdAuthorizer",
+        "@type": "AllWebIdAuthorizer"
       },
       "resourceStore": { "@id": "urn:uma:default:ResourceRegistrationStore" }
     },

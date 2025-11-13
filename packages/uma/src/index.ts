@@ -10,6 +10,7 @@ export * from './credentials/verify/TypedVerifier';
 export * from './credentials/verify/UnsecureVerifier';
 export * from './credentials/verify/SolidOidcVerifier';
 export * from './credentials/verify/JwtVerifier';
+export * from './credentials/verify/AccessTokenVerifier';
 
 // Dialog
 export * from './dialog/Input';
@@ -26,6 +27,7 @@ export * from './policies/authorizers/NamespacedAuthorizer';
 export * from './policies/authorizers/NoneAuthorizer';
 export * from './policies/authorizers/OdrlAuthorizer';
 export * from './policies/authorizers/WebIdAuthorizer';
+export * from './policies/authorizers/DerivedFromAuthorizer';
 
 // Contracts
 export * from './policies/contracts/ContractManager';

@@ -8,7 +8,7 @@ export class TypedVerifier implements Verifier {
 
   constructor(protected verifiers: Record<string, Verifier>) {}
 
-  public async verify(credential: Credential): Promise<ClaimSet> {
+  public async verify(credential: Credential, claimSet: ClaimSet = {}): Promise<ClaimSet> {
     const verifier = this.verifiers[credential.format];
     this.logger.debug(`Verifying credential with typed verifier ${JSON.stringify(credential)}`);
 
@@ -17,6 +17,6 @@ export class TypedVerifier implements Verifier {
       throw new BadRequestHttpError('The provided "claim_token_format" is not supported.');
     }
 
-    return verifier.verify(credential);
+    return verifier.verify(credential, claimSet);
   }
 }

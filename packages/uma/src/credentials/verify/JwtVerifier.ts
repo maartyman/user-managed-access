@@ -21,7 +21,7 @@ export class JwtVerifier implements Verifier {
   ) {}
 
   /** @inheritdoc */
-  public async verify(credential: Credential): Promise<ClaimSet> {
+  public async verify(credential: Credential, claimSet: ClaimSet = {}): Promise<ClaimSet> {
     this.logger.debug(`Verifying credential ${JSON.stringify(credential)}`);
     if (credential.format !== JWT) {
       throw new Error(`Token format '${credential.format}' does not match this processor's format.`);
@@ -53,17 +53,21 @@ export class JwtVerifier implements Verifier {
       await jwtVerify(credential.token, Object.assign(jwk, { type: 'JWK' }));
     }
 
+    // Only include allowed claims, and add them to the claimSet as arrays
     for (const claim of Object.keys(claims)) {
       if (!this.allowedClaims.includes(claim)) {
         if (this.errorOnExtraClaims) {
           throw new Error(`Claim '${claim}' not allowed.`);
         }
-
-        delete claims[claim];
+        continue;
       }
+
+      const value = (claims as Record<string, unknown>)[claim];
+      claimSet[claim] = claimSet[claim] ?? [];
+      (claimSet[claim] as unknown[]).push(value);
     }
 
-    this.logger.debug(`Returning discovered claims: ${JSON.stringify(claims)}`)
-    return claims;
+    this.logger.debug(`Returning discovered claims: ${JSON.stringify(claimSet)}`)
+    return claimSet;
   }
 }

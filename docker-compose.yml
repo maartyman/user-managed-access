@@ -5,13 +5,32 @@
 # Newer versions of CSS can be configured to allow multiple base URLs which will be necessary then.
 
 services:
-  solidtrustflows:
-    image: solidtrustflows
+  css1:
+    image: css:latest
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./packages/css/Dockerfile
     environment:
-      NODE_ENV: production
+      PORT: 3000
+      UMA_BASE: http://uma1:4000/uma
+      DATA_DIR: /data
+      LOG_LEVEL: error
+    volumes:
+      - ./zipdata/3000:/data
+    depends_on:
+      - uma1
     ports:
-      - 3000:3000
-      - 4000:4000
+      - "3000:3000"
+
+  uma1:
+    image: uma:latest
+    build:
+      context: .
+      dockerfile: ./packages/uma/Dockerfile
+    environment:
+      PORT: 4000
+      BASE_URL: http://uma1:4000/uma
+      POLICY_BASE: http://css1:3000/
+      LOG_LEVEL: error
+    ports:
+      - "4000:4000"

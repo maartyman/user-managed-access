@@ -14,6 +14,7 @@ import { Permission } from '../views/Permission';
 import { BaseNegotiator } from './BaseNegotiator';
 import { DialogInput } from './Input';
 import { DialogOutput } from './Output';
+import {ResourceDescription} from "../views/ResourceDescription";
 
 /**
  * A mocked Negotiator for demonstration purposes to display contract negotiation
@@ -29,14 +30,16 @@ export class ContractNegotiator extends BaseNegotiator {
    * @param ticketStore - A KeyValueStore to track Tickets.
    * @param ticketingStrategy - The strategy describing the life cycle of a Ticket.
    * @param tokenFactory - A factory for minting Access Tokens.
+   * @param resourceStore
    */
   public constructor(
     protected verifier: Verifier,
     protected ticketStore: KeyValueStorage<string, Ticket>,
     protected ticketingStrategy: TicketingStrategy,
     protected tokenFactory: TokenFactory,
+    protected readonly resourceStore: KeyValueStorage<string, ResourceDescription>,
   ) {
-    super(verifier, ticketStore, ticketingStrategy, tokenFactory);
+    super(verifier, ticketStore, ticketingStrategy, tokenFactory, resourceStore);
     this.logger.warn('The Contract Negotiator is for demonstration purposes only! DO NOT USE THIS IN PRODUCTION !!!');
   }
 

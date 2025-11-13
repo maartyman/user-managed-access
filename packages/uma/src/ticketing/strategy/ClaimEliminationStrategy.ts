@@ -45,8 +45,12 @@ export class ClaimEliminationStrategy implements TicketingStrategy {
       for (const requirements of ticket.required) {
         const requirement = requirements[key];
 
-        if (requirement && await requirement(claims[key])) {
-          delete requirements[key];
+        if (requirement) {
+          for (const claim of claims[key]!) {
+            if (await requirement(claim)) {
+              delete requirements[key];
+            }
+          }
         }
       }
     }

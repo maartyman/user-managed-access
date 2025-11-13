@@ -6,21 +6,26 @@
   "@graph": [
     {
       "@id": "urn:uma:default:Authorizer",
-      "@type": "NamespacedAuthorizer",
-      "authorizers": [
-        {
-          "NamespacedAuthorizer:_authorizers_key": "profile",
-          "NamespacedAuthorizer:_authorizers_value": {
-            "@id": "urn:uma:default:AllAuthorizer",
-            "@type": "AllAuthorizer"
+      "@type": "DerivedFromAuthorizer",
+      "resourceStore": { "@id": "urn:uma:default:ResourceRegistrationStore" },
+      "authorizer": {
+        "@id": "urn:uma:default:NamespacedAuthorizer",
+        "@type": "NamespacedAuthorizer",
+        "resourceStore": { "@id": "urn:uma:default:ResourceRegistrationStore" },
+        "authorizers": [
+          {
+            "NamespacedAuthorizer:_authorizers_key": "profile",
+            "NamespacedAuthorizer:_authorizers_value": {
+              "@id": "urn:uma:default:AllAuthorizer",
+              "@type": "AllAuthorizer"
+            }
           }
+        ],
+        "fallback": {
+          "@id": "urn:uma:default:AllWebIdAuthorizer",
+          "@type": "AllWebIdAuthorizer"
         }
-      ],
-      "fallback": {
-        "@id": "urn:uma:default:AllWebIdAuthorizer",
-        "@type": "AllWebIdAuthorizer"
-      },
-      "resourceStore": { "@id": "urn:uma:default:ResourceRegistrationStore" }
+      }
     },
     {
       "@id": "urn:uma:default:RulesStorage",

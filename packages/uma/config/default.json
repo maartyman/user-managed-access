@@ -18,7 +18,7 @@
     "sai-uma:config/routes/vc.json",
     "sai-uma:config/routes/contract.json",
     "sai-uma:config/tickets/storage/default.json",
-    "sai-uma:config/tickets/strategy/immediate-authorizer.json",
+    "sai-uma:config/tickets/strategy/claim-elimination.json",
     "sai-uma:config/tokens/factory/default.json",
     "sai-uma:config/tokens/storage/default.json",
     "sai-uma:config/variables/default.json"

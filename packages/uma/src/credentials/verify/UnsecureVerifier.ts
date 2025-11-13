@@ -17,7 +17,7 @@ export class UnsecureVerifier implements Verifier {
   }
 
   /** @inheritdoc */
-  public async verify(credential: Credential): Promise<ClaimSet> {
+  public async verify(credential: Credential, claimSet: ClaimSet = {}): Promise<ClaimSet> {
     this.logger.debug(`Verifying credential ${JSON.stringify(credential)}`);
     if (credential.format !== UNSECURE) {
       throw new Error(`Token format ${credential.format} does not match this processor's format.`);
@@ -26,18 +26,24 @@ export class UnsecureVerifier implements Verifier {
     const raw = credential.token.split(':');
 
     if (raw.length > 2) {
-      throw new Error('Invalid token format, only one \':\' is expected.');
+      throw new Error('Invalid token format, only one ":" is expected.');
     }
 
     try {
-      const claims = {
-        [WEBID]: new URL(decodeURIComponent(raw[0])).toString(),
-        [CLIENTID]: raw.length === 2 && new URL(decodeURIComponent(raw[1])).toString()
-      };
+      const webid = new URL(decodeURIComponent(raw[0])).toString();
+      // Ensure array and push
+      claimSet[WEBID] = claimSet[WEBID] ?? [];
+      claimSet[WEBID]!.push(webid);
 
-      this.logger.info(`Authenticated as via unsecure verifier. ${JSON.stringify(claims)}`);
+      if (raw.length === 2) {
+        const clientId = new URL(decodeURIComponent(raw[1])).toString();
+        claimSet[CLIENTID] = claimSet[CLIENTID] ?? [];
+        claimSet[CLIENTID]!.push(clientId);
+      }
 
-      return claims;
+      this.logger.info(`Authenticated as via unsecure verifier. ${JSON.stringify({ [WEBID]: webid, ...(raw.length === 2 ? { [CLIENTID]: raw[1] } : {}) })}`);
+
+      return claimSet;
 
     } catch (error: unknown) {
       const message = `Error verifying Access Token via WebID: ${(error as Error).message}`;

@@ -15,7 +15,7 @@ export class SolidOidcVerifier implements Verifier {
   private readonly verifyToken = createSolidTokenVerifier();
 
   /** @inheritdoc */
-  public async verify(credential: Credential): Promise<ClaimSet> {
+  public async verify(credential: Credential, claimSet: ClaimSet = {}): Promise<ClaimSet> {
     this.logger.debug(`Verifying credential ${JSON.stringify(credential)}`);
     if (credential.format !== OIDC) {
       throw new BadRequestHttpError(`Token format ${credential.format} does not match this processor's format.`);
@@ -26,10 +26,16 @@ export class SolidOidcVerifier implements Verifier {
 
       this.logger.info(`Authenticated via a Solid OIDC. ${JSON.stringify(claims)}`);
 
-      return ({ // TODO: keep issuer (and other metadata) for validation ??
-        [WEBID]: claims.webid,
-        ...claims.client_id && { [CLIENTID]: claims.client_id }
-      });
+      // Append webid and client_id claims to arrays
+      claimSet[WEBID] = claimSet[WEBID] ?? [];
+      (claimSet[WEBID] as unknown[]).push(claims.webid);
+
+      if (claims.client_id) {
+        claimSet[CLIENTID] = claimSet[CLIENTID] ?? [];
+        (claimSet[CLIENTID] as unknown[]).push(claims.client_id);
+      }
+
+      return claimSet;
 
     } catch (error: unknown) {
       const message = `Error verifying OIDC ID Token: ${(error as Error).message}`;

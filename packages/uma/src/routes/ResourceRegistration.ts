@@ -346,6 +346,10 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
   protected generatePartOfTriples(part: NamedNode, entries: CollectionMetadata[], policyStore: Store): Quad[] {
     const quads: Quad[] = [];
     for (const entry of entries) {
+      if (entry.relation.value === "prov:wasDerivedFrom") {
+        // Skip prov:wasDerivedFrom relations as these are handled elsewhere
+        continue;
+      }
       const collectionIds = this.findCollectionIds(entry, policyStore);
       if (collectionIds.length === 0) {
         throw new BadRequestHttpError(`Registering resource with relation ${entry.relation.value} to ${

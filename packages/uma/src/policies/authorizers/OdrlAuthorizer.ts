@@ -134,6 +134,11 @@ scopeCssToOdrl.set('urn:example:css:modes:append','http://www.w3.org/ns/odrl/2/a
 scopeCssToOdrl.set('urn:example:css:modes:create','http://www.w3.org/ns/odrl/2/create');
 scopeCssToOdrl.set('urn:example:css:modes:delete','http://www.w3.org/ns/odrl/2/delete');
 scopeCssToOdrl.set('urn:example:css:modes:write','http://www.w3.org/ns/odrl/2/write');
+scopeCssToOdrl.set('urn:knows:uma:scopes:read','http://www.w3.org/ns/odrl/2/read');
+scopeCssToOdrl.set('urn:knows:uma:scopes:append','http://www.w3.org/ns/odrl/2/append');
+scopeCssToOdrl.set('urn:knows:uma:scopes:create','http://www.w3.org/ns/odrl/2/create');
+scopeCssToOdrl.set('urn:knows:uma:scopes:delete','http://www.w3.org/ns/odrl/2/delete');
+scopeCssToOdrl.set('urn:knows:uma:scopes:write','http://www.w3.org/ns/odrl/2/write');
 
 const scopeOdrlToCss : Map<string, string> = new Map(Array.from(scopeCssToOdrl, entry => [entry[1], entry[0]]));
 

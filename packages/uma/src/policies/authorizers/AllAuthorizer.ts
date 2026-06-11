@@ -32,6 +32,6 @@ export class AllAuthorizer implements Authorizer {
   /** @inheritdoc */
   public async credentials(permissions: Permission[]): Promise<Requirements[]> {
     this.logger.info(`Skipping credentials. ${JSON.stringify(permissions)}`);
-    return [{}];
+    return permissions.map(() => ({}));
   }
 }

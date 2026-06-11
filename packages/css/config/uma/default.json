@@ -5,6 +5,7 @@
   "import": [
     "uma-css:config/uma/overrides/account-seeding.json",
     "uma-css:config/uma/overrides/account-store.json",
+    "uma-css:config/uma/overrides/aggregator-discovery.json",
     "uma-css:config/uma/overrides/authorization-handler.json",
     "uma-css:config/uma/overrides/authorizer.json",
     "uma-css:config/uma/overrides/jwks.json",

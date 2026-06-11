@@ -1,5 +1,6 @@
 const path = require('path');
 const { ComponentsManager } = require('componentsjs');
+const { ModuleStateBuilder } = require('componentsjs/lib/loading/ModuleStateBuilder');
 const { setGlobalLoggerFactory, WinstonLoggerFactory } = require('@solid/community-server');
 
 function parseArgs(argv) {
@@ -45,12 +46,31 @@ async function main() {
   variables['urn:uma:variables:policyDir'] = path.join(rootDir, './config/rules/policy');
   variables['urn:uma:variables:eyePath'] = 'eye';
 
-  const configPath = path.join(rootDir, './config/default.json');
+  const configPath = path.resolve(rootDir, args['config-location'] || './config/default.json');
+  const workspaceRoot = path.join(rootDir, '../..');
 
   setGlobalLoggerFactory(new WinstonLoggerFactory(logLevel));
 
+  const moduleStateBuilder = new ModuleStateBuilder();
+  const nodeModuleImportPaths = [rootDir, workspaceRoot];
+  const nodeModulePaths = await moduleStateBuilder.buildNodeModulePaths(nodeModuleImportPaths);
+  const packageJsons = await moduleStateBuilder.buildPackageJsons(nodeModulePaths);
+  await moduleStateBuilder.preprocessPackageJsons(packageJsons);
+  const componentModules = await moduleStateBuilder.buildComponentModules(packageJsons);
+  const contexts = await moduleStateBuilder.buildComponentContexts(packageJsons);
+  const importPaths = await moduleStateBuilder.buildComponentImportPaths(packageJsons);
+
   const manager = await ComponentsManager.build({
     mainModulePath: rootDir,
+    moduleState: {
+      mainModulePath: rootDir,
+      nodeModuleImportPaths,
+      nodeModulePaths,
+      packageJsons,
+      componentModules,
+      contexts,
+      importPaths,
+    },
     logLevel,
     typeChecking: false,
   });

@@ -8,6 +8,11 @@ import { NeedInfoError, RequiredClaimsInfo } from '../../../src/errors/NeedInfoE
 import { TicketingStrategy } from '../../../src/ticketing/strategy/TicketingStrategy';
 import { Ticket } from '../../../src/ticketing/Ticket';
 import { SerializedToken, TokenFactory } from '../../../src/tokens/TokenFactory';
+import { ResourceDescription } from '../../../src/views/ResourceDescription';
+
+vi.mock('node:crypto', () => ({
+  randomUUID: vi.fn().mockReturnValue('ticket-id'),
+}));
 
 describe('BaseNegotiator', (): void => {
   const input: DialogInput = {
@@ -27,6 +32,7 @@ describe('BaseNegotiator', (): void => {
 
   let verifier: Mocked<Verifier>
   let ticketStore: Mocked<KeyValueStorage<string, Ticket>>;
+  let resourceStore: Mocked<KeyValueStorage<string, ResourceDescription>>;
   let ticketingStrategy: Mocked<TicketingStrategy>;
   let tokenFactory: Mocked<TokenFactory>;
   let negotiator: BaseNegotiator;
@@ -45,6 +51,14 @@ describe('BaseNegotiator', (): void => {
       entries: vi.fn().mockImplementation(() => ticketData.entries()),
     };
 
+    resourceStore = {
+      has: vi.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
+      delete: vi.fn(),
+      entries: vi.fn(),
+    };
+
     ticketingStrategy = {
       initializeTicket: vi.fn().mockResolvedValue(ticket),
       validateClaims: vi.fn().mockResolvedValue(ticket),
@@ -59,7 +73,7 @@ describe('BaseNegotiator', (): void => {
       deserialize: vi.fn(),
     };
 
-    negotiator = new BaseNegotiator(verifier, ticketStore, ticketingStrategy, tokenFactory);
+    negotiator = new BaseNegotiator(verifier, ticketStore, ticketingStrategy, tokenFactory, resourceStore);
   });
 
   it('errors if the input is in the wrong type.', async(): Promise<void> => {
@@ -78,6 +92,39 @@ describe('BaseNegotiator', (): void => {
     expect(tokenFactory.serialize).toHaveBeenCalledTimes(1);
     expect(tokenFactory.serialize).toHaveBeenLastCalledWith(
       { permissions: { resource_id: 'id1', resource_scopes: [ 'scope1' ] } });
+  });
+
+  it('returns derivation identifiers and management tokens for derivation creation.', async(): Promise<void> => {
+    const crypto = await import('node:crypto');
+    vi.mocked(crypto.randomUUID).mockReturnValueOnce('derivation-id' as any);
+    tokenFactory.serialize
+      .mockResolvedValueOnce({ token: 'access-token', tokenType: 'Bearer' })
+      .mockResolvedValueOnce({ token: 'management-token', tokenType: 'Bearer' });
+
+    await expect(negotiator.negotiate({
+      ...input,
+      scope: 'urn:knows:uma:scopes:derivation-creation',
+    })).resolves.toEqual({
+      access_token: 'access-token',
+      token_type: 'Bearer',
+      derivation_resource_id: 'derivation-id',
+      management_access_token: {
+        access_token: 'management-token',
+        token_type: 'Bearer',
+      },
+    });
+    expect(resourceStore.set).toHaveBeenCalledWith('derivation-id', {
+      resource_scopes: [ 'urn:knows:uma:scopes:derivation-read' ],
+    });
+    expect(tokenFactory.serialize).toHaveBeenLastCalledWith({
+      permissions: [{
+        resource_id: 'derivation-id',
+        resource_scopes: [
+          'urn:knows:uma:scopes:write',
+          'urn:knows:uma:scopes:delete',
+        ],
+      }],
+    });
   });
 
   it('errors if there is no existing ticket and no permission request.', async(): Promise<void> => {
@@ -103,10 +150,43 @@ describe('BaseNegotiator', (): void => {
     } catch (error) {
       expect(error).toBeInstanceOf(NeedInfoError);
       expect((error as NeedInfoError).additionalParams).toEqual({
-        required_claims: { claim_token_format: [['fn']] },
+        required_claims: [{ claim_token_format: 'fn' }],
       });
     }
     expect(ticketStore.set).toHaveBeenCalledTimes(1);
+  });
+
+  it('requests derivation-access claims using the spec shape.', async(): Promise<void> => {
+    ticketingStrategy.initializeTicket.mockResolvedValueOnce({
+      permissions: [{ resource_id: 'derived', resource_scopes: [ 'urn:knows:uma:scopes:read' ] }],
+      provided: {},
+      required: [],
+    });
+    ticketingStrategy.resolveTicket.mockResolvedValueOnce({ success: false, value: [] });
+    resourceStore.get.mockResolvedValueOnce({
+      resource_scopes: [ 'urn:knows:uma:scopes:read' ],
+      resource_relations: {
+        'prov:wasDerivedFrom': [
+          { issuer: 'https://upstream.example/uma', derivation_resource_id: 'upstream-derived' },
+        ],
+      },
+    });
+
+    try {
+      await negotiator.negotiate({ permissions: [{ resource_id: 'derived', resource_scopes: [ 'urn:knows:uma:scopes:read' ] }] });
+    } catch (error) {
+      expect(error).toBeInstanceOf(NeedInfoError);
+      expect((error as NeedInfoError).additionalParams).toEqual({
+        required_claims: [{
+          claim_type: 'https://spec.knows.idlab.ugent.be/aggregator-protocol/latest/#derivation-access',
+          friendly_name: 'Prove access to source',
+          claim_token_format: 'urn:ietf:params:oauth:token-type:access_token',
+          issuer: 'https://upstream.example/uma',
+          derivation_resource_id: 'upstream-derived',
+          resource_scopes: [ 'urn:knows:uma:scopes:derivation-read' ],
+        }],
+      });
+    }
   });
 
   it('errors if an invalid ticket is provided.', async(): Promise<void> => {
@@ -141,6 +221,10 @@ describe('BaseNegotiator', (): void => {
   });
 
   it('processes the credentials if they are provided.', async(): Promise<void> => {
+    verifier.verify.mockImplementationOnce(async(_credential, claimSet): Promise<ClaimSet> => {
+      Object.assign(claimSet!, claims);
+      return claimSet!;
+    });
     await expect(negotiator.negotiate({ ...input, claim_token: 'token', claim_token_format: 'format' })).resolves
       .toEqual({ access_token: 'token', token_type: 'type' });
     expect(ticketStore.get).toHaveBeenCalledTimes(0);
@@ -149,7 +233,7 @@ describe('BaseNegotiator', (): void => {
     expect(ticketingStrategy.initializeTicket).toHaveBeenCalledTimes(1);
     expect(ticketingStrategy.initializeTicket).toHaveBeenLastCalledWith(input.permissions);
     expect(verifier.verify).toHaveBeenCalledTimes(1);
-    expect(verifier.verify).toHaveBeenLastCalledWith({ token: 'token', format: 'format' });
+    expect(verifier.verify).toHaveBeenLastCalledWith({ token: 'token', format: 'format' }, claims);
     expect(ticketingStrategy.validateClaims).toHaveBeenCalledTimes(1);
     expect(ticketingStrategy.validateClaims).toHaveBeenLastCalledWith(ticket, claims);
     expect(tokenFactory.serialize).toHaveBeenCalledTimes(1);

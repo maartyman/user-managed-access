@@ -118,7 +118,7 @@ describe('OdrlAuthorizer', (): void => {
     evaluate.mockResolvedValueOnce(new Parser().parse(report));
 
     await expect(authorizer.permissions({}, query)).resolves
-      .toEqual([{ resource_id: 'rid', resource_scopes: [ 'urn:example:css:modes:read' ] }]);
+      .toEqual([{ resource_id: 'rid', resource_scopes: [ 'urn:knows:uma:scopes:read' ] }]);
     expect(basicPolicy).toHaveBeenCalledTimes(1);
     expect(evaluate).toHaveBeenCalledTimes(1);
   });
@@ -205,8 +205,8 @@ describe('OdrlAuthorizer', (): void => {
 
     await expect(authorizer.permissions({}, query)).resolves
       .toEqual([
-        { resource_id: 'rid1', resource_scopes: [ 'urn:example:css:modes:read' ] },
-        { resource_id: 'rid2', resource_scopes: [ 'urn:example:css:modes:create' ]
+        { resource_id: 'rid1', resource_scopes: [ 'urn:knows:uma:scopes:read' ] },
+        { resource_id: 'rid2', resource_scopes: [ 'urn:knows:uma:scopes:create' ]
       }]);
     expect(basicPolicy).toHaveBeenCalledTimes(3);
     expect(evaluate).toHaveBeenCalledTimes(3);

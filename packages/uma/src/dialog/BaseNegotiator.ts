@@ -19,7 +19,8 @@ import { serializePolicyInstantiation } from '../logging/OperationSerializer';
 import { Permission } from '../views/Permission';
 import { ResourceDescription } from '../views/ResourceDescription';
 import {ClaimSet} from "../credentials/ClaimSet";
-import {UPSTREAMPERMISSION} from "../credentials/Claims";
+import {DERIVATION_ACCESS, UPSTREAMPERMISSION} from "../credentials/Claims";
+import {ACCESSTOKEN} from "../credentials/Formats";
 
 /**
  * A concrete Negotiator that verifies incoming Claims and processes Tickets
@@ -91,7 +92,20 @@ export class BaseNegotiator implements Negotiator {
         this.resourceStore.set(handle_id, {
           resource_scopes: ["urn:knows:uma:scopes:derivation-read"],
         });
+        const managementToken = await this.tokenFactory.serialize({
+          permissions: [{
+            resource_id: handle_id,
+            resource_scopes: [
+              "urn:knows:uma:scopes:write",
+              "urn:knows:uma:scopes:delete",
+            ],
+          }],
+        });
         resultObj['derivation_resource_id'] = handle_id;
+        resultObj['management_access_token'] = {
+          access_token: managementToken.token,
+          token_type: managementToken.tokenType,
+        };
       }
 
       // TODO:: dynamic contract link to stored signed contract.
@@ -233,14 +247,12 @@ export class BaseNegotiator implements Negotiator {
 
       for (const src of upstream) {
         claims.push({
-          name: UPSTREAMPERMISSION,
+          claim_type: DERIVATION_ACCESS,
           friendly_name: "Prove access to source",
-          claim_token_format: 'urn:ietf:params:oauth:token-type:access_token',
-          details: {
-            issuer: src.issuer,
-            resource_id: src.derivation_resource_id,
-            resource_scopes: ["urn:knows:uma:scopes:derivation-read"],
-          }
+          claim_token_format: ACCESSTOKEN,
+          issuer: src.issuer,
+          derivation_resource_id: src.derivation_resource_id,
+          resource_scopes: ["urn:knows:uma:scopes:derivation-read"],
         });
       }
     }

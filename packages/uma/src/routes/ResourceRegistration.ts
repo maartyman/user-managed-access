@@ -74,6 +74,7 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
       this.logger.warn(`Syntax error: ${createErrorMessage(e)}, ${body}`);
       throw new BadRequestHttpError(`Request has bad syntax: ${createErrorMessage(e)}`);
     }
+    this.normalizeDerivedFrom(body);
 
     // We are using the name as the UMA identifier for now.
     // Reason being that there is not yet a good way to determine what the identifier would be when writing policies.
@@ -117,6 +118,7 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
       this.logger.warn(`Syntax error: ${createErrorMessage(e)}, ${body}`);
       throw new BadRequestHttpError(`Request has bad syntax: ${createErrorMessage(e)}`);
     }
+    this.normalizeDerivedFrom(body);
 
     // Update the resource metadata
     await this.setResourceMetadata(parameters.id, body);
@@ -300,6 +302,9 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
       }
       const relationNode = DF.namedNode(relation);
       for (const source of id ? [ id ] : value) {
+        if (relation === 'prov:wasDerivedFrom' && typeof source !== 'string') {
+          continue;
+        }
         const entry: CollectionMetadata = {
           relation: relationNode,
           source: DF.namedNode(source),
@@ -309,6 +314,15 @@ export class ResourceRegistrationRequestHandler extends HttpHandler {
       }
     }
     return result;
+  }
+
+  protected normalizeDerivedFrom(description: ResourceDescription): void {
+    if (!description.derived_from || description.derived_from.length === 0) {
+      return;
+    }
+    description.resource_relations = description.resource_relations ?? {};
+    const relations = description.resource_relations as NodeJS.Dict<unknown>;
+    relations['prov:wasDerivedFrom'] = description.derived_from;
   }
 
   /**

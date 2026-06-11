@@ -104,6 +104,27 @@ describe('ResourceRegistration', (): void => {
       expect(resourceStore.set).lastCalledWith('name', input.request.body);
     });
 
+    it('accepts spec derived_from metadata as a derivation relation.', async(): Promise<void> => {
+      input.request.body!.derived_from = [
+        { issuer: 'https://upstream.example/uma', derivation_resource_id: 'derived-1' },
+      ];
+      await expect(handler.handle(input)).resolves.toEqual({
+        status: 201,
+        headers: { location: `http://example.com/foo/name` },
+        body: { _id: 'name', user_access_policy_uri: 'TODO: implement policy UI' },
+      });
+      expect(resourceStore.set).toHaveBeenCalledTimes(1);
+      expect(resourceStore.set).lastCalledWith('name', {
+        ...input.request.body,
+        resource_relations: {
+          'prov:wasDerivedFrom': [
+            { issuer: 'https://upstream.example/uma', derivation_resource_id: 'derived-1' },
+          ],
+        },
+      });
+      expect(policies.addRule).toHaveBeenCalledTimes(0);
+    });
+
     it('stores newly created asset collections.', async(): Promise<void> => {
       const crypto = await import('node:crypto');
       let count = 0;
